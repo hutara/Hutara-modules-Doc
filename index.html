@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>psyOperator — User Manual | Hutara</title>
+<meta name="description" content="Complete user manual for psyOperator, a psychedelic FM synthesizer module for VCV Rack by Hutara.">
+<style>
+  :root {
+    --bg-0: #06080c; --bg-1: #0c1118; --bg-2: #131a24; --bg-3: #1a2430;
+    --fg-0: #e8f4ff; --fg-1: #a8bbcc; --fg-2: #6b8299;
+    --cyan: #3cffff; --orange: #ffa03c; --pink: #ff64c8;
+    --green: #3cff78; --purple: #c878ff; --red: #ff5050; --yellow: #ffdc3c;
+    --border: rgba(60, 255, 255, 0.15);
+    --border-hi: rgba(60, 255, 255, 0.4);
+    --glow-cyan: 0 0 12px rgba(60, 255, 255, 0.5);
+    --glow-pink: 0 0 12px rgba(255, 100, 200, 0.5);
+    --mono: 'Share Tech Mono', 'JetBrains Mono', 'Fira Code', monospace;
+    --sans: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --max-w: 1200px;
+    --radius: 12px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg-0);
+    color: var(--fg-0);
+    line-height: 1.65;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at top, rgba(60, 255, 255, 0.08), transparent 50%),
+      radial-gradient(ellipse at bottom, rgba(255, 100, 200, 0.06), transparent 50%);
+    background-attachment: fixed;
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--bg-1); }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(var(--cyan), var(--pink)); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: linear-gradient(var(--pink), var(--cyan)); }
+
+  a { color: var(--cyan); text-decoration: none; transition: color var(--transition); }
+  a:hover { color: var(--pink); text-shadow: 0 0 8px rgba(255, 100, 200, 0.5); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    background: rgba(60, 255, 255, 0.08);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    color: var(--cyan);
+    border: 1px solid rgba(60, 255, 255, 0.15);
+  }
+
+  /* Header */
+  header.topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(6, 8, 12, 0.85);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.9rem 2rem;
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: var(--mono); font-size: 1.15rem; font-weight: 700;
+    color: var(--cyan); letter-spacing: 0.5px; text-shadow: var(--glow-cyan);
+  }
+  .brand-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--cyan); box-shadow: var(--glow-cyan);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.85); }
+  }
+  nav.topnav {
+    display: flex; gap: 1.5rem;
+    font-family: var(--mono); font-size: 0.85rem;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+  nav.topnav a { color: var(--fg-2); position: relative; }
+  nav.topnav a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0;
+    width: 0; height: 2px; background: var(--cyan);
+    transition: width var(--transition);
+  }
+  nav.topnav a:hover { color: var(--cyan); }
+  nav.topnav a:hover::after { width: 100%; }
+
+  /* Hero */
+  section.hero { max-width: var(--max-w); margin: 0 auto; padding: 5rem 2rem 3rem; text-align: center; position: relative; }
+  .hero-badge {
+    display: inline-block; padding: 0.35rem 1rem;
+    background: rgba(60, 255, 255, 0.1);
+    border: 1px solid var(--border-hi); border-radius: 100px;
+    font-family: var(--mono); font-size: 0.75rem;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--cyan); margin-bottom: 1.5rem; box-shadow: var(--glow-cyan);
+  }
+  h1.hero-title {
+    font-family: var(--mono);
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 900; line-height: 1.05; letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--pink) 50%, var(--orange) 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem; filter: drop-shadow(0 0 30px rgba(60, 255, 255, 0.3));
+  }
+  .hero-subtitle {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--fg-1); max-width: 720px; margin: 0 auto 2.5rem;
+  }
+  .hero-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.6rem; margin-bottom: 3rem; }
+  .tag {
+    padding: 0.4rem 0.9rem; border-radius: 100px;
+    font-family: var(--mono); font-size: 0.75rem;
+    letter-spacing: 0.5px; border: 1px solid;
+  }
+  .tag.psy { color: var(--cyan); border-color: var(--cyan); background: rgba(60, 255, 255, 0.08); }
+  .tag.dark { color: var(--pink); border-color: var(--pink); background: rgba(255, 100, 200, 0.08); }
+  .tag.hitech { color: var(--orange); border-color: var(--orange); background: rgba(255, 160, 60, 0.08); }
+
+  .hero-panel {
+    position: relative; max-width: 900px; margin: 0 auto 4rem;
+    border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--border-hi);
+    box-shadow: 0 0 60px rgba(60, 255, 255, 0.15), 0 0 120px rgba(255, 100, 200, 0.08), inset 0 0 60px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-1));
+    aspect-ratio: 16 / 9;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hero-panel img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+  .img-placeholder {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 0.75rem; width: 100%; height: 100%; min-height: 280px;
+    background: repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(60, 255, 255, 0.03) 12px, rgba(60, 255, 255, 0.03) 24px);
+    color: var(--fg-2); font-family: var(--mono); font-size: 0.85rem;
+    text-align: center; padding: 2rem;
+  }
+  .img-placeholder svg { width: 48px; height: 48px; stroke: var(--cyan); opacity: 0.5; }
+
+  /* Layout */
+  .layout {
+    display: grid; grid-template-columns: 240px 1fr; gap: 3rem;
+    max-width: var(--max-w); margin: 0 auto; padding: 0 2rem 6rem; align-items: start;
+  }
+  aside.toc {
+    position: sticky; top: 90px; padding: 1.5rem;
+    background: var(--bg-1); border: 1px solid var(--border);
+    border-radius: var(--radius); max-height: calc(100vh - 120px); overflow-y: auto;
+  }
+  aside.toc h4 {
+    font-family: var(--mono); font-size: 0.75rem; color: var(--fg-2);
+    text-transform: uppercase; letter-spacing: 2px;
+    margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border);
+  }
+  aside.toc ul { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
+  aside.toc li a {
+    display: block; padding: 0.4rem 0.6rem;
+    font-size: 0.85rem; color: var(--fg-1); border-radius: 6px;
+    transition: all var(--transition); border-left: 2px solid transparent;
+  }
+  aside.toc li a:hover { background: rgba(60, 255, 255, 0.08); color: var(--cyan); border-left-color: var(--cyan); }
+  aside.toc li.sub a { padding-left: 1.5rem; font-size: 0.8rem; color: var(--fg-2); }
+
+  /* Sections */
+  main { min-width: 0; }
+  section.content-section { margin-bottom: 5rem; scroll-margin-top: 80px; }
+  .section-header {
+    display: flex; align-items: baseline; gap: 1rem;
+    margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+  }
+  .section-number { font-family: var(--mono); font-size: 0.9rem; color: var(--fg-2); letter-spacing: 2px; }
+  h2.section-title {
+    font-family: var(--mono);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700; color: var(--fg-0); letter-spacing: -0.5px;
+  }
+  h3.subsection-title {
+    font-family: var(--mono); font-size: 1.15rem; font-weight: 700;
+    color: var(--cyan); margin: 2rem 0 1rem;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  h4.minor-title {
+    font-family: var(--mono); font-size: 1rem; font-weight: 700;
+    color: var(--orange); margin: 1.5rem 0 0.75rem;
+    letter-spacing: 0.3px;
+  }
+  p { color: var(--fg-1); margin-bottom: 1rem; font-size: 1rem; }
+  ul, ol { color: var(--fg-1); padding-left: 1.5rem; line-height: 2; margin-bottom: 1.5rem; }
+  li { margin-bottom: 0.35rem; }
+  strong { color: var(--fg-0); }
+
+  /* Feature grid */
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.25rem; margin: 2rem 0;
+  }
+  .feature-card {
+    padding: 1.5rem;
+    background: linear-gradient(145deg, var(--bg-2), var(--bg-1));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    transition: all var(--transition); position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: ''; position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%; background: var(--cyan);
+    transform: scaleY(0); transform-origin: top;
+    transition: transform var(--transition);
+  }
+  .feature-card:hover {
+    border-color: var(--border-hi); transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), var(--glow-cyan);
+  }
+  .feature-card:hover::before { transform: scaleY(1); }
+  .feature-card .fc-icon { font-size: 1.8rem; margin-bottom: 0.75rem; filter: drop-shadow(0 0 8px rgba(60, 255, 255, 0.5)); }
+  .feature-card h4 {
+    font-family: var(--mono); font-size: 1rem; color: var(--cyan);
+    margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;
+  }
+  .feature-card p { font-size: 0.9rem; color: var(--fg-1); margin: 0; }
+
+  /* Tables */
+  .param-table-wrap {
+    overflow-x: auto; border-radius: var(--radius);
+    border: 1px solid var(--border); margin: 1.5rem 0 2rem;
+  }
+  table.param-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 0.9rem; background: var(--bg-1);
+  }
+  table.param-table thead {
+    background: linear-gradient(180deg, var(--bg-3), var(--bg-2));
+    border-bottom: 2px solid var(--border-hi);
+  }
+  table.param-table th {
+    text-align: left; padding: 0.9rem 1rem;
+    font-family: var(--mono); font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 1.5px;
+    color: var(--cyan); font-weight: 700; white-space: nowrap;
+  }
+  table.param-table td {
+    padding: 0.8rem 1rem; border-top: 1px solid var(--border);
+    color: var(--fg-1); vertical-align: top;
+  }
+  table.param-table tr:hover td { background: rgba(60, 255, 255, 0.04); }
+  table.param-table td:first-child {
+    font-family: var(--mono); color: var(--fg-0);
+    font-weight: 600; white-space: nowrap;
+  }
+  table.param-table .range { font-family: var(--mono); color: var(--orange); font-size: 0.85rem; }
+
+  /* Morph grid */
+  .morph-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem; margin: 1.5rem 0;
+  }
+  .morph-card {
+    padding: 1.25rem;
+    background: linear-gradient(145deg, var(--bg-2), var(--bg-1));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    transition: all var(--transition); cursor: default;
+    position: relative; overflow: hidden;
+  }
+  .morph-card:hover {
+    border-color: var(--border-hi);
+    box-shadow: var(--glow-cyan); transform: translateY(-2px);
+  }
+  .morph-card .morph-idx {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: var(--fg-2); letter-spacing: 1px; margin-bottom: 0.3rem;
+  }
+  .morph-card .morph-name {
+    font-family: var(--mono); font-size: 1.05rem; font-weight: 700;
+    color: var(--cyan); margin-bottom: 0.4rem; letter-spacing: 0.5px;
+  }
+  .morph-card .morph-desc { font-size: 0.85rem; color: var(--fg-1); line-height: 1.5; }
+  .morph-card[data-genre="psy"] { border-left: 3px solid var(--cyan); }
+  .morph-card[data-genre="dark"] { border-left: 3px solid var(--pink); }
+  .morph-card[data-genre="hitech"] { border-left: 3px solid var(--orange); }
+  .morph-genre-badge {
+    position: absolute; top: 0.75rem; right: 0.75rem;
+    font-family: var(--mono); font-size: 0.6rem;
+    padding: 0.15rem 0.4rem; border-radius: 4px;
+    letter-spacing: 1px; text-transform: uppercase;
+  }
+  .morph-card[data-genre="psy"] .morph-genre-badge { color: var(--cyan); border: 1px solid var(--cyan); }
+  .morph-card[data-genre="dark"] .morph-genre-badge { color: var(--pink); border: 1px solid var(--pink); }
+  .morph-card[data-genre="hitech"] .morph-genre-badge { color: var(--orange); border: 1px solid var(--orange); }
+
+  /* Screenshot */
+  .screenshot-container {
+    margin: 2rem 0; border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--border-hi);
+    background: linear-gradient(135deg, var(--bg-2), var(--bg-1));
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  }
+  .screenshot-container img { width: 100%; height: auto; display: block; }
+  .screenshot-caption {
+    padding: 0.8rem 1rem; background: var(--bg-3);
+    border-top: 1px solid var(--border);
+    font-family: var(--mono); font-size: 0.8rem;
+    color: var(--fg-2); text-align: center; letter-spacing: 0.5px;
+  }
+
+  /* Callout */
+  .callout {
+    padding: 1.25rem 1.5rem; border-radius: var(--radius);
+    margin: 1.5rem 0; border-left: 4px solid; font-size: 0.95rem;
+  }
+  .callout.info { background: rgba(60, 255, 255, 0.06); border-color: var(--cyan); color: var(--fg-0); }
+  .callout.warn { background: rgba(255, 160, 60, 0.06); border-color: var(--orange); color: var(--fg-0); }
+  .callout.tip { background: rgba(60, 255, 120, 0.06); border-color: var(--green); color: var(--fg-0); }
+  .callout.danger { background: rgba(255, 80, 80, 0.06); border-color: var(--red); color: var(--fg-0); }
+  .callout strong {
+    display: block; font-family: var(--mono); font-size: 0.8rem;
+    text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.4rem;
+  }
+  .callout.info strong { color: var(--cyan); }
+  .callout.warn strong { color: var(--orange); }
+  .callout.tip strong { color: var(--green); }
+  .callout.danger strong { color: var(--red); }
+
+  /* Signal flow */
+  .signal-flow {
+    display: flex; flex-wrap: wrap; gap: 0.5rem;
+    align-items: center; justify-content: center;
+    padding: 2rem 1rem; background: var(--bg-1);
+    border-radius: var(--radius); border: 1px solid var(--border);
+    margin: 2rem 0;
+  }
+  .flow-node {
+    padding: 0.5rem 1rem; background: var(--bg-3);
+    border: 1px solid var(--border-hi); border-radius: 8px;
+    font-family: var(--mono); font-size: 0.8rem;
+    color: var(--cyan); white-space: nowrap;
+  }
+  .flow-arrow { color: var(--fg-2); font-size: 1.2rem; font-family: var(--mono); }
+
+  /* Chain diagram */
+  .chain-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem; margin: 1.5rem 0;
+  }
+  .chain-card {
+    padding: 1rem 1.25rem;
+    background: linear-gradient(145deg, var(--bg-2), var(--bg-1));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    transition: all var(--transition);
+  }
+  .chain-card:hover {
+    border-color: var(--border-hi);
+    box-shadow: var(--glow-cyan); transform: translateY(-2px);
+  }
+  .chain-card .chain-id {
+    font-family: var(--mono); font-size: 1.1rem; font-weight: 700;
+    color: var(--orange); margin-bottom: 0.4rem; letter-spacing: 1px;
+  }
+  .chain-card .chain-desc { font-size: 0.85rem; color: var(--fg-1); line-height: 1.5; }
+  .chain-card .chain-pattern {
+    font-family: var(--mono); font-size: 0.75rem;
+    color: var(--cyan); background: rgba(60, 255, 255, 0.08);
+    padding: 0.3rem 0.5rem; border-radius: 4px;
+    margin-top: 0.5rem; display: inline-block;
+  }
+
+  /* Phase steps */
+  .phase-steps {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem; margin: 1.5rem 0;
+  }
+  .phase-step {
+    padding: 1rem;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+  .phase-step .ps-num {
+    font-family: var(--mono); font-size: 0.7rem;
+    color: var(--fg-2); letter-spacing: 1px; margin-bottom: 0.3rem;
+  }
+  .phase-step .ps-name {
+    font-family: var(--mono); font-size: 0.9rem;
+    color: var(--cyan); font-weight: 700; margin-bottom: 0.3rem;
+  }
+  .phase-step .ps-desc { color: var(--fg-1); line-height: 1.5; }
+
+  /* Footer */
+  footer {
+    padding: 3rem 2rem; background: var(--bg-1);
+    border-top: 1px solid var(--border);
+    text-align: center; margin-top: 4rem;
+  }
+  footer p {
+    font-family: var(--mono); font-size: 0.8rem;
+    color: var(--fg-2); margin-bottom: 0.75rem; letter-spacing: 0.5px;
+  }
+  footer .footer-links {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 1.5rem; margin-top: 1rem; font-size: 0.85rem;
+  }
+  footer .footer-links a {
+    font-family: var(--mono); text-transform: uppercase;
+    letter-spacing: 1px; font-size: 0.75rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside.toc { position: static; max-height: none; }
+    nav.topnav { display: none; }
+  }
+  @media (max-width: 600px) {
+    header.topbar { padding: 0.75rem 1rem; }
+    section.hero { padding: 3rem 1rem 2rem; }
+    .layout { padding: 0 1rem 4rem; }
+    .section-header { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) both; }
+  .fade-up.delay-1 { animation-delay: 0.15s; }
+  .fade-up.delay-2 { animation-delay: 0.3s; }
+  .fade-up.delay-3 { animation-delay: 0.45s; }
+
+  /* LED legend */
+  .led-legend {
+    display: flex; flex-wrap: wrap; gap: 1rem;
+    padding: 1rem 1.25rem; background: var(--bg-1);
+    border-radius: var(--radius); border: 1px solid var(--border);
+    margin: 1.5rem 0;
+  }
+  .led-item {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.85rem; color: var(--fg-1);
+    font-family: var(--mono);
+  }
+  .led-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .led-dot.cyan { background: var(--cyan); color: var(--cyan); }
+  .led-dot.orange { background: var(--orange); color: var(--orange); }
+  .led-dot.pink { background: var(--pink); color: var(--pink); }
+  .led-dot.green { background: var(--green); color: var(--green); }
+  .led-dot.yellow { background: var(--yellow); color: var(--yellow); }
+  .led-dot.red { background: var(--red); color: var(--red); }
+  .led-dot.blue { background: #3c8cff; color: #3c8cff; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ============ Header ============ -->
+<header class="topbar">
+  <a href="#" class="brand">
+    <span class="brand-dot"></span>
+    HUTARA / psyOperator
+  </a>
+  <nav class="topnav">
+    <a href="#overview">Overview</a>
+    <a href="#fm-engine">FM Engine</a>
+    <a href="#chain">Chain</a>
+    <a href="#morph">Morph</a>
+    <a href="#parameters">Parameters</a>
+    <a href="#tips">Tips</a>
+  </nav>
+</header>
+
+<!-- ============ Hero ============ -->
+<section class="hero fade-up">
+  <div class="hero-badge">VCV Rack 2.x — User Manual</div>
+  <h1 class="hero-title">psyOperator</h1>
+  <p class="hero-subtitle">
+    A psychedelic FM synthesizer with 14 morphable waveforms, a dedicated DARK filter,
+    a sub-oscillator, and four modular macros. Designed for psytrance, darkpsy, and hitech.
+  </p>
+  <div class="hero-tags">
+    <span class="tag psy">Psytrance</span>
+    <span class="tag dark">Darkpsy</span>
+    <span class="tag hitech">HiTech</span>
+  </div>
+  <div class="hero-panel">
+    <!-- SCREENSHOT: full psyOperator panel -->
+    <div class="img-placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      <span>SCREENSHOT: psyOperator Full Panel</span>
+      <span style="font-size: 0.75rem;">assets/screenshot-panel.png</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Layout ============ -->
+<div class="layout">
+
+  <!-- ============ TOC ============ -->
+  <aside class="toc">
+    <h4>Contents</h4>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#quickstart">Quick Start</a></li>
+      <li><a href="#architecture">Signal Architecture</a></li>
+      <li><a href="#fm-engine">FM Engine</a></li>
+      <li class="sub"><a href="#fm-modes">FM Modes</a></li>
+      <li class="sub"><a href="#fm-routing">FM Routing</a></li>
+      <li class="sub"><a href="#fm-sync">FM Sync</a></li>
+      <li class="sub"><a href="#chain">Chain Patterns</a></li>
+      <li class="sub"><a href="#fm-index">FM Index</a></li>
+      <li class="sub"><a href="#modulator">Internal Modulator</a></li>
+      <li><a href="#fm-engine-display">FM Engine Display</a></li>
+      <li><a href="#morph">FM Source Morph</a></li>
+      <li class="sub"><a href="#morph-shapes">14 Shapes</a></li>
+      <li class="sub"><a href="#morph-cv">Morph CV Input</a></li>
+      <li><a href="#psy-display">Main Display (PsyDisplay)</a></li>
+      <li><a href="#sub-display">Sub Wave Display</a></li>
+      <li><a href="#dark-filter">DARK Filter</a></li>
+      <li><a href="#turbulence">Turbulence</a></li>
+      <li><a href="#feral">FERAL Feedback</a></li>
+      <li><a href="#sub">Sub Oscillator</a></li>
+      <li><a href="#parameters">Full Parameter Reference</a></li>
+      <li><a href="#leds">LED Reference</a></li>
+      <li><a href="#genre">Genre Mode</a></li>
+      <li><a href="#cv-modes">CV Modes</a></li>
+      <li><a href="#tips">Tips &amp; Recipes</a></li>
+      <li><a href="#troubleshooting">Troubleshooting</a></li>
+    </ul>
+  </aside>
+
+  <!-- ============ Main ============ -->
+  <main>
+
+    <!-- ============ 01 OVERVIEW ============ -->
+    <section class="content-section" id="overview">
+      <div class="section-header">
+        <span class="section-number">01</span>
+        <h2 class="section-title">Overview</h2>
+      </div>
+      <p>
+        <strong>psyOperator</strong> is a multi-layer FM synthesizer built for the three
+        major psychedelic genres. It combines four BLEP-antialiased oscillators (Sine, Saw,
+        Triangle, Square) with an advanced FM source morph engine, a DARK lowpass filter,
+        a dedicated sub-oscillator, and four cross-modulating macros.
+      </p>
+      <p>
+        Internally, psyOperator runs a <strong>22-stage DSP pipeline</strong> at audio rate.
+        Every stage is visible in one of three on-panel displays: the <strong>main PsyDisplay</strong>
+        (top center), the <strong>FM Engine Display</strong> (center), and the <strong>Sub Wave Display</strong>
+        (bottom right). Together, they provide real-time feedback on every aspect of the sound.
+      </p>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="fc-icon">🎛️</div>
+          <h4>14 Morph Shapes</h4>
+          <p>Continuously morph between Sine, Squelch, Ring-Sine, PM-Fold, and more — each designed for a specific genre.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">🎚️</div>
+          <h4>4 Modular Macros</h4>
+          <p>PSY, DARK, MOTION, and FERAL cross-modulate the entire signal chain from a single knob.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">🔊</div>
+          <h4>Sub Oscillator</h4>
+          <p>6 waveforms, 8 frequency modes, and layered/modulator/carrier routing for sub-bass.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">🌪️</div>
+          <h4>Turbulence</h4>
+          <p>Lorenz chaos, envelope follower, or rhythmic gating for organic motion.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">🔥</div>
+          <h4>FERAL Feedback</h4>
+          <p>Self-modulating feedback loop for aggressive, unstable textures.</p>
+        </div>
+        <div class="feature-card">
+          <div class="fc-icon">💥</div>
+          <h4>Bit Crush + SRR</h4>
+          <p>Digital degradation for lo-fi, harsh, or glitchy character.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 02 QUICK START ============ -->
+    <section class="content-section" id="quickstart">
+      <div class="section-header">
+        <span class="section-number">02</span>
+        <h2 class="section-title">Quick Start</h2>
+      </div>
+      <p>Get sound out of psyOperator in under 60 seconds:</p>
+      <ol>
+        <li>Patch <code>FINAL_OUTPUT</code> (bottom right) to your audio interface.</li>
+        <li>Optionally connect a gate/trigger to <code>GATE_INPUT</code> (top left) to enable the VCA.</li>
+        <li>Adjust the <strong>PSY</strong> macro to taste — it opens the FM source morph and adds bite.</li>
+        <li>Explore the 14 shapes by turning the <strong>FM SRC MORPH</strong> knob (right column).</li>
+        <li>Try <strong>Genre Mode</strong> from the context menu (right-click) for instant presets.</li>
+      </ol>
+      <div class="callout tip">
+        <strong>Tip</strong>
+        If no gate is connected, the VCA stays fully open. You can also patch a slow LFO
+        to <code>GATE_INPUT</code> for organic amplitude modulation.
+      </div>
+    </section>
+
+    <!-- ============ 03 SIGNAL ARCHITECTURE ============ -->
+    <section class="content-section" id="architecture">
+      <div class="section-header">
+        <span class="section-number">03</span>
+        <h2 class="section-title">Signal Architecture</h2>
+      </div>
+      <p>
+        psyOperator processes audio through 22 stages. The high-level path is:
+      </p>
+      <div class="signal-flow">
+        <div class="flow-node">4 Oscillators</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">FM Engine</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">Wave Shaping</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">DARK Filter</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">Sub Mix</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node">Final Stage</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-node" style="border-color:var(--pink);color:var(--pink);">FINAL OUT</div>
+      </div>
+
+      <h3 class="subsection-title">Detailed 22-Stage Pipeline</h3>
+      <div class="phase-steps">
+        <div class="phase-step"><div class="ps-num">STAGE 00</div><div class="ps-name">Gate / VCA</div><div class="ps-desc">Gate detection, hard-sync reset, smooth VCA</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 01</div><div class="ps-name">Macros</div><div class="ps-desc">Read 4 macros + CV, smooth via S-curve</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 02</div><div class="ps-name">Cross-Mod</div><div class="ps-desc">feralEffective, motionEffective coefficients</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 03</div><div class="ps-name">Env Follower</div><div class="ps-desc">Internal envelope of all 4 oscillator outputs</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 04</div><div class="ps-name">Turbulence</div><div class="ps-desc">Lorenz / Envelope / Rhythmic noise source</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 05</div><div class="ps-name">Pitch Bus</div><div class="ps-desc">Off / Bipolar / Quantize / Glide / Both</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 06</div><div class="ps-name">FM Config</div><div class="ps-desc">Read FM mode, routing, sync, chain pattern</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 07</div><div class="ps-name">FM Index</div><div class="ps-desc">Base index + CV + psy + turbulence + feral</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE ★</div><div class="ps-name">Morph CV</div><div class="ps-desc">Interpret, slew, auto-center, apply offset</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 08</div><div class="ps-name">Tonal Ratios</div><div class="ps-desc">Small frequency offsets per oscillator (feral)</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 09</div><div class="ps-name">Pitch Compute</div><div class="ps-desc">Knob + CV + bus for each of 4 oscillators</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 10</div><div class="ps-name">Self-FM</div><div class="ps-desc">Feedback history, allpass filter, self-depth</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 10.5</div><div class="ps-name">Sub as Mod</div><div class="ps-desc">Optional: sub becomes FM modulator</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 11</div><div class="ps-name">FM Routing</div><div class="ps-desc">Compute 4 frequencies via FM mode + routing</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 12</div><div class="ps-name">Phase Distortion</div><div class="ps-desc">Pre-shape phase for extra harmonics</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 13</div><div class="ps-name">Phase Advance</div><div class="ps-desc">Advance phases, apply FM sync</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 14</div><div class="ps-name">Waveform Gen</div><div class="ps-desc">14-shape morph + shaped saw/tri/sq</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 15</div><div class="ps-name">Feedback</div><div class="ps-desc">Push current outputs to history</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 16</div><div class="ps-name">Output Gains</div><div class="ps-desc">Apply volume knobs + feral boost</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 17</div><div class="ps-name">Buffers + Outputs</div><div class="ps-desc">Wave buffers for display, individual outputs</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 18-21</div><div class="ps-name">Post-Process</div><div class="ps-desc">DC block, harmonics, fold, SRR, bit crush, DARK, feral feedback, sub, final</div></div>
+        <div class="phase-step"><div class="ps-num">STAGE 22</div><div class="ps-name">Lights</div><div class="ps-desc">Update all LEDs from current state</div></div>
+      </div>
+    </section>
+
+    <!-- ============ 04 FM ENGINE ============ -->
+    <section class="content-section" id="fm-engine">
+      <div class="section-header">
+        <span class="section-number">04</span>
+        <h2 class="section-title">FM Engine</h2>
+      </div>
+
+      <p>
+        The FM Engine is the core sound-generation module. It takes four base oscillators
+        (Sine, Saw, Triangle, Square), modulates their frequencies (or phases), and routes
+        them through one of three topologies. The engine exposes three independent controls:
+        <strong>FM Mode</strong> (how the modulation is applied), <strong>FM Routing</strong>
+        (who modulates whom), and <strong>FM Sync</strong> (phase alignment between oscillators).
+      </p>
+
+      <h3 class="subsection-title" id="fm-modes">FM Modes</h3>
+      <p>
+        The <code>FM MODE</code> switch (top center) determines how the FM index affects
+        the frequency or phase of each oscillator. All three modes use the same FM Index
+        knob and CV, but interpret them differently:
+      </p>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Mode</th><th>Formula</th><th>Character</th><th>Use case</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>EXP</td>
+              <td><code>f = base · 2^(index · 2 · cv)</code></td>
+              <td>Exponential — musical, tonal</td>
+              <td>Psy basslines, melodic leads</td>
+            </tr>
+            <tr>
+              <td>LIN</td>
+              <td><code>f = base · (1 + index · 2 · cv)</code></td>
+              <td>Linear — symmetric, harsh</td>
+              <td>Metallic darkpsy, aggressive hitech</td>
+            </tr>
+            <tr>
+              <td>PHASE</td>
+              <td><code>φ = φ + index · 0.75 · cv</code></td>
+              <td>Phase modulation — true FM sound, no DC drift</td>
+              <td>Warm leads, chimes, formants</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <strong>EXP vs LIN vs PHASE — When to use which?</strong>
+        <ul style="margin-bottom: 0;">
+          <li><strong>EXP</strong>: stay in tune when index changes; the ratio doubles every 1.0 index unit. Perfect for pitched leads.</li>
+          <li><strong>LIN</strong>: index causes absolute Hz shift. Non-tonal, chaotic. Great for darkpsy.</li>
+          <li><strong>PHASE</strong>: mathematically equivalent to classic FM but without DC offset. Best for high-index FM where LIN/EXP would cause aliasing.</li>
+        </ul>
+      </div>
+
+      <h3 class="subsection-title" id="fm-routing">FM Routing</h3>
+      <p>
+        The <code>FM ROUTING</code> switch (next to FM Mode) determines <strong>who modulates whom</strong>
+        between the four oscillators. Each routing mode has a distinct sound character.
+      </p>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Route</th><th>Behavior</th><th>Result</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GLB (Global)</td>
+              <td>All four oscillators share the same FM CV, plus their own self-feedback.</td>
+              <td>Unison FM. Each oscillator keeps its own pitch but receives the same modulation. Safest, most predictable.</td>
+            </tr>
+            <tr>
+              <td>SLF (Self)</td>
+              <td>Each oscillator modulates itself. No cross-talk.</td>
+              <td>Classic self-FM. Slightly out of tune because of feedback; great for metallic leads.</td>
+            </tr>
+            <tr>
+              <td>CHN (Chain)</td>
+              <td>Oscillators modulate each other according to one of 8 chain patterns (see <a href="#chain">Chain Patterns</a>).</td>
+              <td>True cross-FM. Highly complex, evolving, aggressive. The most "alive" option.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title" id="fm-sync">FM Sync</h3>
+      <p>
+        The <code>FM SYNC</code> switch aligns the phase of the saw, triangle, and square
+        oscillators to the sine oscillator. This creates hard-sync and soft-sync effects
+        that change the waveform drastically.
+      </p>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Sync Mode</th><th>Behavior</th><th>Sound</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>OFF</td><td>No phase alignment. Each oscillator runs freely.</td><td>Clean, stable.</td></tr>
+            <tr><td>SFT (Soft)</td><td>When sine wraps, slave phase is pulled toward 0.5 with strength coefficient.</td><td>Soft sync — bell-like, no hard clicks.</td></tr>
+            <tr><td>HRD (Hard)</td><td>When sine wraps, slave phase snaps to 0.5 immediately.</td><td>Hard sync — aggressive, sharp leads.</td></tr>
+            <tr><td>REV (Reverse)</td><td>When sine wraps, slave phase inverts (wrap(1.0 - phase)).</td><td>Reverse sync — unpredictable, glitchy.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <code>FM SYNC STRENGTH</code> (0..100%) controls how aggressively the sync pulls
+        the slave phase. At 0%, sync is disabled even if the mode is set. The knob can also
+        be dragged directly from the <strong>FM Engine Display</strong> (see below).
+      </p>
+
+      <h3 class="subsection-title" id="chain">Chain Patterns</h3>
+      <p>
+        When FM Routing is set to <code>CHN</code>, the four oscillators modulate each other
+        according to one of eight chain patterns. Each pattern is a permutation of
+        <code>[sine, saw, triangle, square]</code>, and the display shows the active pattern
+        as a small graph.
+      </p>
+
+      <div class="chain-grid">
+        <div class="chain-card">
+          <div class="chain-id">Pattern A</div>
+          <div class="chain-desc">Square → Sine → Saw → Triangle → Square</div>
+          <div class="chain-pattern">[3, 0, 1, 2]</div>
+        </div>
+        <div class="chain-card">
+          <div class="chain-id">Pattern B</div>
+          <div class="chain-desc">Saw → Triangle → Square → Sine → Saw</div>
+          <div class="chain-pattern">[1, 2, 3, 0]</div>
+        </div>
+        <div class="chain-card">
+          <div class="chain-id">Pattern C</div>
+          <div class="chain-desc">Triangle → Square → Sine → Saw → Triangle</div>
+          <div class="chain-pattern">[2, 3, 0, 1]</div>
+        </div>
+        <div class="chain-card">
+          <div class="chain-id">Pattern D</div>
+          <div class="chain-desc">Saw → Sine → Square → Triangle → Saw</div>
+          <div class="chain-pattern">[1, 0, 3, 2]</div>
+        </div>
+        <div class="chain-card">
+          <div class="chain-id">Pattern E</div>
+          <div class="chain-desc">No cross-FM (all self)</div>
+          <div class="chain-pattern">[0, 1, 2, 3]</div>
+        </div>
+        <div class="chain-card">
+          <div class="chain-id">Pattern F</div>
+          <div class="chain-desc">Triangle → Sine → Square → Saw → Triangle</div>
+          <div class="chain-pattern">[2, 0, 3, 1]</div>
+        </div>
+        <div class="chain-card">
+          <div class="chain-id">Pattern G</div>
+          <div class="chain-desc">Square → Saw → Sine → Triangle → Square</div>
+          <div class="chain-pattern">[3, 1, 0, 2]</div>
+        </div>
+        <div class="chain-card">
+          <div class="chain-id">Pattern H</div>
+          <div class="chain-desc">Sine → Square → Triangle → Saw → Sine</div>
+          <div class="chain-pattern">[0, 3, 2, 1]</div>
+        </div>
+      </div>
+
+      <h4 class="minor-title">Chain Depth (per-node)</h4>
+      <p>
+        Each chain node has an independent <strong>depth</strong> from 0% to 100%, set by
+        dragging vertically on the node inside the <a href="#fm-engine-display">FM Engine
+        Display</a> while the CHAIN segment is focused. A node at 0% breaks the chain — the
+        incoming modulation to that oscillator is silenced. A node at 100% passes the full
+        modulation. This lets you sculpt exactly which oscillators participate in the chain.
+      </p>
+
+      <div class="callout tip">
+        <strong>Pro Tip — Chain Sculpting</strong>
+        Set Pattern A, then drop the Saw node's depth to 0%. Now the chain becomes
+        Square → Sine → (break) — the Saw acts as a modulator but is not modulated itself.
+        This creates asymmetric FM textures that evolve differently from the source oscillators.
+      </div>
+
+      <h3 class="subsection-title" id="fm-index">FM Index</h3>
+      <p>
+        The <code>FM INDEX</code> knob (large, left of center) and its CV input control the
+        master FM depth. Internally, the index is computed as:
+      </p>
+      <div class="callout info">
+        <strong>FM Index Formula</strong>
+        <code>fmIndex = knob + CV·amount + 0.30·psy + 0.20·turbulence·motion + 0.10·feral + env·6 + feedback·feral·turb</code>
+        <br>
+        Then clamped to <code>[-30, +30]</code>, soft-saturated, and clamped again to <code>[-6, +6]</code>.
+      </div>
+      <p>
+        The final index (post-clamp) modulates each oscillator's frequency or phase according
+        to the FM Mode. Negative index inverts the modulation — useful for phase inversion
+        effects. The <code>FM ENV</code> knob adds an envelope-follower term, making the
+        index track the signal amplitude (dynamics).
+      </p>
+
+      <h3 class="subsection-title" id="modulator">Internal Modulator</h3>
+      <p>
+        When <code>FM INPUT</code> is <strong>not connected</strong> and
+        <code>LEGACY STATIC</code> is set to Off (default), psyOperator uses an
+        <strong>internal modulator</strong> instead of an external CV. This internal modulator
+        is a full oscillator with its own frequency, waveform, and warmth.
+      </p>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Parameter</th><th>What it does</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>MOD RATIO</td><td>Frequency ratio of the modulator (0.25× to 8×)</td></tr>
+            <tr><td>MOD WAVE</td><td>Base waveform: Sine (follows Morph), Triangle, Saw, Square</td></tr>
+            <tr><td>MOD PITCH</td><td>Pitch offset from the sine oscillator (-2 to -6 oct)</td></tr>
+            <tr><td>MOD CV</td><td>Pitch modulation via the Pitch Bus</td></tr>
+            <tr><td>MOD WARMTH</td><td>tanh blend for non-sine modulators (adds harmonics)</td></tr>
+            <tr><td>INT SCALE</td><td>How much of the internal modulator feeds the FM CV</td></tr>
+            <tr><td>INT AMT</td><td>Internal self-FM injection amount (for feedback loops)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout info">
+        <strong>Legacy Mode</strong>
+        If <code>LEGACY STATIC</code> is On, the internal modulator is ignored and a
+        constant +5V is used as FM CV (matches old behavior). Turn it off to use the
+        internal modulator.
+      </div>
+    </section>
+
+    <!-- ============ 05 FM ENGINE DISPLAY ============ -->
+    <section class="content-section" id="fm-engine-display">
+      <div class="section-header">
+        <span class="section-number">05</span>
+        <h2 class="section-title">FM Engine Display</h2>
+      </div>
+
+      <p>
+        The circular <strong>FM Engine Display</strong> (center of the panel) is the
+        interaction hub for the FM engine. It is divided into four clickable ring segments
+        plus a central area whose contents depend on the focused segment.
+      </p>
+
+      <!-- SCREENSHOT: FM Engine Display close-up -->
+      <div class="screenshot-container">
+        <div class="img-placeholder" style="min-height: 200px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+          </svg>
+          <span>SCREENSHOT: FM Engine Display</span>
+          <span style="font-size: 0.75rem;">assets/screenshot-fm-display.png</span>
+        </div>
+        <div class="screenshot-caption">Fig 2. FM Engine Display with four segments (MODE, ROUTE, SYNC, CHAIN).</div>
+      </div>
+
+      <h3 class="subsection-title">Four Segments</h3>
+      <p>
+        Hovering over the outer ring selects a segment. Each segment has its own color,
+        center content, and interaction.
+      </p>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Segment</th><th>Color</th><th>Center content</th><th>Interaction</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>MODE</td>
+              <td style="color:var(--cyan);">Cyan</td>
+              <td>Current FM mode label + FM Index bar</td>
+              <td><strong>Left click</strong> cycles: EXP → LIN → PHS → EXP</td>
+            </tr>
+            <tr>
+              <td>ROUTE</td>
+              <td style="color:var(--orange);">Orange</td>
+              <td>Current routing label (GLB / SLF / CHN)</td>
+              <td><strong>Left click</strong> cycles: GLB → SLF → CHN → GLB</td>
+            </tr>
+            <tr>
+              <td>SYNC</td>
+              <td style="color:var(--pink);">Pink</td>
+              <td>Sync mode + sync-strength ring</td>
+              <td><strong>Left click</strong> cycles sync mode; <strong>drag</strong> inside the ring to set sync strength; <strong>right click</strong> resets strength to 100%</td>
+            </tr>
+            <tr>
+              <td>CHAIN</td>
+              <td style="color:var(--green);">Green</td>
+              <td>Mini-chain graph with 4 nodes and animated arrows</td>
+              <td><strong>Left click</strong> cycles patterns A→H; <strong>drag a node vertically</strong> to set its depth; <strong>right click a node</strong> to reset it to 100%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Ring Letter (Top-Left)</h3>
+      <p>
+        A letter (A–H) is drawn on the left side of the ring. It shows the currently active
+        chain pattern. When the CHAIN segment is focused, the letter becomes fully opaque;
+        otherwise it fades to a dim state. This lets you see the active chain at a glance
+        even when focused on another segment.
+      </p>
+
+      <h3 class="subsection-title">Mini-Chain Graph</h3>
+      <p>
+        When the CHAIN segment is focused, the center shows a small interactive graph:
+      </p>
+      <ul>
+        <li><strong>Four colored nodes</strong> arranged in a square: cyan (Sine), orange (Saw), green (Triangle), pink (Square)</li>
+        <li><strong>Animated arrows</strong> show the current routing direction; arrow speed is fixed at 1.8×</li>
+        <li><strong>Each node has an arc</strong> from -π/2 to +π/2 showing its depth (0% = no arc, 100% = full circle)</li>
+        <li><strong>While dragging a node</strong>, a percentage is drawn inside it</li>
+        <li><strong>Waveform icons</strong> are drawn inside each node when not dragging (shows which oscillator it is)</li>
+      </ul>
+
+      <!-- SCREENSHOT: Mini-chain graph -->
+      <div class="screenshot-container">
+        <div class="img-placeholder" style="min-height: 180px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+            <path d="M10 6.5h4M6.5 10v4M17.5 10v4M10 17.5h4"/>
+          </svg>
+          <span>SCREENSHOT: Mini-Chain Graph (CHAIN segment focused)</span>
+          <span style="font-size: 0.75rem;">assets/screenshot-mini-chain.png</span>
+        </div>
+        <div class="screenshot-caption">Fig 3. Interactive mini-chain with four nodes, animated arrows, and depth arcs.</div>
+      </div>
+
+      <h3 class="subsection-title">Sync-Strength Ring</h3>
+      <p>
+        When the SYNC segment is focused, the center shows a ring representing sync strength.
+        The arc starts at -π/2 and sweeps clockwise proportional to the current strength
+        (0–100%). Dragging vertically inside the ring adjusts the strength; release to lock.
+      </p>
+
+      <div class="callout tip">
+        <strong>Pro Tip — Sync Strength Drag</strong>
+        You can dial in sync strength from 0% to 100% by dragging directly on the ring.
+        The vertical drag is scaled by 50 pixels per full sweep, so fine adjustments are easy.
+      </div>
+    </section>
+
+    <!-- ============ 06 MORPH ============ -->
+    <section class="content-section" id="morph">
+      <div class="section-header">
+        <span class="section-number">06</span>
+        <h2 class="section-title">FM Source Morph</h2>
+      </div>
+      <p>
+        The heart of psyOperator is a 14-shape morph engine controlled by the
+        <code>FM SRC MORPH</code> knob and its dedicated CV input. Each shape has a
+        distinct spectral fingerprint, tuned for a specific psychedelic genre.
+      </p>
+
+      <h3 class="subsection-title" id="morph-shapes">The 14 Shapes</h3>
+      <div class="morph-grid">
+        <div class="morph-card">
+          <div class="morph-idx">SHAPE 00</div>
+          <div class="morph-name">Sine</div>
+          <div class="morph-desc">Pure carrier. Reference point. No harmonics added.</div>
+        </div>
+        <div class="morph-card">
+          <div class="morph-idx">SHAPE 01</div>
+          <div class="morph-name">Triangle (BL)</div>
+          <div class="morph-desc">Soft BLEP-antialiased triangle. Gentle odd harmonics.</div>
+        </div>
+        <div class="morph-card">
+          <div class="morph-idx">SHAPE 02</div>
+          <div class="morph-name">Square (BL)</div>
+          <div class="morph-desc">Antialiased square. Strong odd harmonics for acidic leads.</div>
+        </div>
+        <div class="morph-card">
+          <div class="morph-idx">SHAPE 03</div>
+          <div class="morph-name">Saw (BL)</div>
+          <div class="morph-desc">Full harmonic series. Classic psy bassline carrier.</div>
+        </div>
+        <div class="morph-card" data-genre="hitech">
+          <div class="morph-genre-badge">HiTech</div>
+          <div class="morph-idx">SHAPE 04</div>
+          <div class="morph-name">Pulse-Variable</div>
+          <div class="morph-desc">Duty modulated from 15% (sharp) to 50%. Squelch monster.</div>
+        </div>
+        <div class="morph-card" data-genre="psy">
+          <div class="morph-genre-badge">Psy</div>
+          <div class="morph-idx">SHAPE 05</div>
+          <div class="morph-name">Squelch</div>
+          <div class="morph-desc">Psytrance DNA. tanh drive plus AM texture. The acid lead.</div>
+        </div>
+        <div class="morph-card" data-genre="dark">
+          <div class="morph-genre-badge">Dark</div>
+          <div class="morph-idx">SHAPE 06</div>
+          <div class="morph-name">Ring-Sine</div>
+          <div class="morph-desc">3:1 ring modulation. Metallic bell for darkpsy.</div>
+        </div>
+        <div class="morph-card" data-genre="dark">
+          <div class="morph-genre-badge">Dark</div>
+          <div class="morph-idx">SHAPE 07</div>
+          <div class="morph-name">Formant 4:1</div>
+          <div class="morph-desc">Cosine AM at 4× rate. Vowel-like vowel for darkpsy.</div>
+        </div>
+        <div class="morph-card">
+          <div class="morph-idx">SHAPE 08</div>
+          <div class="morph-name">Fold (tanh)</div>
+          <div class="morph-desc">Soft tanh saturation. Warm fold character.</div>
+        </div>
+        <div class="morph-card">
+          <div class="morph-idx">SHAPE 09</div>
+          <div class="morph-name">Sync 2:1 (BL)</div>
+          <div class="morph-desc">Hard sync at 2:1 with BLEP correction. Sharp lead.</div>
+        </div>
+        <div class="morph-card">
+          <div class="morph-idx">SHAPE 10</div>
+          <div class="morph-name">Sync 3:2 (Inharmonic)</div>
+          <div class="morph-desc">1.5:1 ratio creates inharmonic texture. Very darkpsy.</div>
+        </div>
+        <div class="morph-card" data-genre="hitech">
+          <div class="morph-genre-badge">HiTech</div>
+          <div class="morph-idx">SHAPE 11</div>
+          <div class="morph-name">PM-Fold</div>
+          <div class="morph-desc">HiTech DNA. Deep phase mod (0.4 to 1.2 depth). Aggressive.</div>
+        </div>
+        <div class="morph-card">
+          <div class="morph-idx">SHAPE 12</div>
+          <div class="morph-name">Chebyshev T5</div>
+          <div class="morph-desc">5th-order polynomial. Rich harmonic distortion.</div>
+        </div>
+        <div class="morph-card" data-genre="hitech">
+          <div class="morph-genre-badge">HiTech</div>
+          <div class="morph-idx">SHAPE 13</div>
+          <div class="morph-name">Noise-Sine</div>
+          <div class="morph-desc">Deterministic pseudo-noise. Texture for harsh psy.</div>
+        </div>
+      </div>
+
+      <p>
+        The morph engine <strong>interpolates linearly</strong> between adjacent shapes and
+        applies a subtle <strong>sinusoidal emphasis</strong> in the transition zone, so
+        even morphing between two visually similar shapes produces an audible shift. RMS is
+        normalized across all 14 shapes so the perceived loudness stays constant as you
+        sweep the knob.
+      </p>
+
+      <h3 class="subsection-title" id="morph-cv">Morph CV Input</h3>
+      <p>
+        The <code>FM SRC MORPH CV</code> input modulates the morph position on top of the
+        knob. Response depends on the <code>CV MODE</code> switch (see <a href="#cv-modes">CV Modes</a>).
+      </p>
+
+      <!-- SCREENSHOT: Morph CV section -->
+      <div class="screenshot-container">
+        <div class="img-placeholder" style="min-height: 160px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <span>SCREENSHOT: Morph CV Knob + Input + Amount</span>
+          <span style="font-size: 0.75rem;">assets/screenshot-morph-cv.png</span>
+        </div>
+        <div class="screenshot-caption">Fig 4. FM SRC MORPH knob (right), CV input, and Amount knob.</div>
+      </div>
+
+      <div class="callout info">
+        <strong>Auto-Center Behavior</strong>
+        When a CV is connected and amount is nonzero, the effective base is forced
+        away from the [0, 1] edges so BOTH positive and negative CV produce audible changes.
+        At 100% amount, base is fixed at 0.5 and CV swings the full range. At 50%, base
+        is clamped to [0.25, 0.75]. The knob has no effect when CV is connected at 100%.
+      </div>
+
+      <div class="callout tip">
+        <strong>Tip — S&amp;H Modulation</strong>
+        Patch a Sample &amp; Hold to <code>FM SRC MORPH CV</code> with amount at 100%
+        for evolving, stepped morph textures. The 8 ms slew smooths transitions without
+        killing the snap.
+      </div>
+    </section>
+
+    <!-- ============ 07 MAIN DISPLAY ============ -->
+    <section class="content-section" id="psy-display">
+      <div class="section-header">
+        <span class="section-number">07</span>
+        <h2 class="section-title">Main Display (PsyDisplay)</h2>
+      </div>
+
+      <p>
+        The large circular <strong>PsyDisplay</strong> at the top center is the main
+        oscilloscope-style display. It shows the current state of all four oscillators,
+        the sum output, and status of key parameters.
+      </p>
+
+      <!-- SCREENSHOT: Main display -->
+      <div class="screenshot-container">
+        <div class="img-placeholder" style="min-height: 220px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M7 12c1-2 3-2 4 0s3 2 4 0M7 12c1 2 3 2 4 0s3-2 4 0"/>
+          </svg>
+          <span>SCREENSHOT: PsyDisplay (Main Display)</span>
+          <span style="font-size: 0.75rem;">assets/screenshot-psy-display.png</span>
+        </div>
+        <div class="screenshot-caption">Fig 5. PsyDisplay: status dots, sum ring, quad waves, center wave, and parameter overlay.</div>
+      </div>
+
+      <h3 class="subsection-title">Layers (Inside to Outside)</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Layer</th><th>What it shows</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Center Wave</td><td>Mini oscilloscope of the SUM output (fades when text overlay is active)</td></tr>
+            <tr><td>Center Text</td><td>Parameter name + value when a knob is touched (3.5s hold, 1s fade)</td></tr>
+            <tr><td>Quad Waves</td><td>4 arcs showing snapSine, snapSquare, snapTri, snapSaw (one per quadrant)</td></tr>
+            <tr><td>Sum Ring</td><td>Circular waveform of snapSum — full ring shows the SUM output envelope</td></tr>
+            <tr><td>Status Dots</td><td>8 glowing dots around the edge (see below)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Status Dots</h3>
+      <p>
+        Eight small glowing dots are drawn around the edge of the display. Each represents
+        a key parameter and brightens according to its current value:
+      </p>
+      <div class="led-legend">
+        <div class="led-item"><span class="led-dot green"></span>PSY macro</div>
+        <div class="led-item"><span class="led-dot blue"></span>DARK macro</div>
+        <div class="led-item"><span class="led-dot yellow"></span>MOTION macro</div>
+        <div class="led-item"><span class="led-dot red"></span>FERAL macro</div>
+        <div class="led-item"><span class="led-dot orange"></span>FM Index</div>
+        <div class="led-item"><span class="led-dot cyan"></span>Pitch Bus Mode</div>
+        <div class="led-item"><span class="led-dot pink"></span>CV Mode</div>
+        <div class="led-item"><span class="led-dot orange"></span>Turbulence Mode</div>
+      </div>
+
+      <h3 class="subsection-title">Parameter Overlay</h3>
+      <p>
+        When you touch any knob or switch on the panel, the PsyDisplay briefly shows the
+        parameter name and value in the center. This is a "flash display" that lets you
+        read values without external tools. It fades out after 3.5 seconds of inactivity.
+      </p>
+      <p>
+        The overlay distinguishes between <strong>pitch values</strong> (Hz or oct, based
+        on Pitch Mode) and other values (%). For the pitch knobs, it re-renders immediately
+        if you toggle the Pitch Mode switch.
+      </p>
+    </section>
+
+    <!-- ============ 08 SUB DISPLAY ============ -->
+    <section class="content-section" id="sub-display">
+      <div class="section-header">
+        <span class="section-number">08</span>
+        <h2 class="section-title">Sub Wave Display</h2>
+      </div>
+
+      <p>
+        The <strong>Sub Wave Display</strong> (bottom right) is a small rectangular display
+        that shows the current sub-oscillator waveform in real time, with left/right buttons
+        to change the waveform without opening the context menu.
+      </p>
+
+      <!-- SCREENSHOT: Sub wave display -->
+      <div class="screenshot-container">
+        <div class="img-placeholder" style="min-height: 140px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 16 8 8 12 16 16 8 20 16"/>
+          </svg>
+          <span>SCREENSHOT: Sub Wave Display</span>
+          <span style="font-size: 0.75rem;">assets/screenshot-sub-display.png</span>
+        </div>
+        <div class="screenshot-caption">Fig 6. Sub wave display with chevron buttons and waveform preview.</div>
+      </div>
+
+      <h3 class="subsection-title">Elements</h3>
+      <ul>
+        <li><strong>Left chevron (‹)</strong> — cycles to the previous waveform</li>
+        <li><strong>Right chevron (›)</strong> — cycles to the next waveform</li>
+        <li><strong>Center waveform</strong> — live preview of the sub oscillator output</li>
+        <li><strong>Wave label</strong> — SIN, TRI, SAW, SQR, FLD, SYN</li>
+      </ul>
+
+      <h3 class="subsection-title">Active / Inactive States</h3>
+      <p>
+        The display turns gray when <code>SUB ROUTE</code> is set to <strong>OFF</strong>.
+        In this state, the waveform is not drawn (the sub is disabled). This gives you a
+        clear visual indicator that the sub oscillator is bypassed.
+      </p>
+
+      <h3 class="subsection-title">Click Behavior</h3>
+      <p>
+        Clicking either chevron cycles the waveform through the 6 options
+        (SIN → TRI → SAW → SQR → FLD → SYN → SIN → ...). This is faster than opening the
+        context menu, so live performers can switch waveforms mid-set.
+      </p>
+    </section>
+
+    <!-- ============ 09 DARK FILTER ============ -->
+    <section class="content-section" id="dark-filter">
+      <div class="section-header">
+        <span class="section-number">09</span>
+        <h2 class="section-title">DARK Filter</h2>
+      </div>
+      <p>
+        The <strong>DARK</strong> macro controls a one-pole lowpass filter that progressively
+        darkens the signal. It is not a resonant filter — it is a clean, transparent
+        lowpass with a smooth exponential cutoff curve.
+      </p>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>DARK knob</th><th>Cutoff frequency</th><th>Character</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>0%</td><td>18,000 Hz (bypass)</td><td>Full brightness</td></tr>
+            <tr><td>25%</td><td>~9,700 Hz</td><td>Slight top-end roll-off</td></tr>
+            <tr><td>50%</td><td>~5,200 Hz</td><td>Muffled presence</td></tr>
+            <tr><td>75%</td><td>~2,800 Hz</td><td>Dark, underwater</td></tr>
+            <tr><td>100%</td><td>1,800 Hz</td><td>Very dark, sub-bass-like</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        Internally, the DARK macro also:
+      </p>
+      <ul>
+        <li>Blends the FM mode from EXP toward LINEAR (adds inharmonic bite)</li>
+        <li>Reduces the resonance of the sub oscillator (softens the sub)</li>
+        <li>Adds harmonics through asymmetric drive on the sub</li>
+        <li>Increases the sub level (auto-blend)</li>
+      </ul>
+
+      <div class="callout warn">
+        <strong>Warning — DARK is not a filter knob</strong>
+        DARK affects multiple stages simultaneously. If you want a clean lowpass, use an
+        external filter module. DARK is a "darken the whole sound" macro, not a mixing filter.
+      </div>
+    </section>
+
+    <!-- ============ 10 TURBULENCE ============ -->
+    <section class="content-section" id="turbulence">
+      <div class="section-header">
+        <span class="section-number">10</span>
+        <h2 class="section-title">Turbulence</h2>
+      </div>
+      <p>
+        The <strong>MOTION</strong> macro (labeled "Turbulence") is a chaos/noise generator
+        that adds organic modulation to pitch, FM, morph, wave shaping, and sync. Its behavior
+        depends on the <code>TURB MODE</code> switch (3-position).
+      </p>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Mode</th><th>Source</th><th>Character</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>CHA (Lorenz)</td>
+              <td>Lorenz attractor (3D chaos)</td>
+              <td>Unpredictable, evolving. The classic "living" texture. Speed scales with MOTION.</td>
+            </tr>
+            <tr>
+              <td>ENV (Envelope)</td>
+              <td>Internal envelope follower of the audio output</td>
+              <td>Turbulence tracks the signal itself, so louder parts get more modulation.</td>
+            </tr>
+            <tr>
+              <td>RTH (Rhythmic)</td>
+              <td>Internal clock (0.5–12 Hz)</td>
+              <td>Gated turbulence — synced to a rate you can tune with MOTION. Good for rhythmic patches.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        The turbulence output is used in the following places:
+      </p>
+      <ul>
+        <li><code>FM Index</code> — adds 0.20 × turbulence × motionEffective</li>
+        <li><code>Morph CV</code> — adds 0.25 × turbulence × motionEffective</li>
+        <li><code>Phase Mod</code> — adds 0.045–0.070 × feral × turbulence × motion to each oscillator</li>
+        <li><code>Sub Drift</code> — scales sub oscillator frequency wobble</li>
+        <li><code>Sync Strength</code> — boosts sync strength by 0.30 × turbulence × motion</li>
+        <li><code>Wave Shaping</code> — adds 0.28–0.30 × turbulence × motion to saw/tri/square</li>
+        <li><code>Sub Drift</code> — if enabled, scales sub frequency modulation</li>
+      </ul>
+
+      <div class="callout tip">
+        <strong>Pro Tip — Chaotic Bass</strong>
+        Set TURB MODE to CHA, increase MOTION to 30–50%, and reduce the FM Index to 0.2.
+        The bassline will subtly drift in pitch and texture, giving it a "breathing"
+        quality that's very popular in psytrance.
+      </div>
+    </section>
+
+    <!-- ============ 11 FERAL ============ -->
+    <section class="content-section" id="feral">
+      <div class="section-header">
+        <span class="section-number">11</span>
+        <h2 class="section-title">FERAL Feedback</h2>
+      </div>
+      <p>
+        The <strong>FERAL</strong> macro controls a self-modulating feedback loop that
+        injects previous output back into the FM engine. It is the source of psyOperator's
+        most aggressive, unstable textures.
+      </p>
+
+      <h3 class="subsection-title">FERAL Affects</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Stage</th><th>Effect</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>FM Index</td><td>Adds 0.10 × feral to base FM index</td></tr>
+            <tr><td>Wave Shaping</td><td>Adds 0.30–0.55 × feral × psy to shape amount</td></tr>
+            <tr><td>Phase Mod</td><td>Adds 0.045–0.070 × feral to each oscillator</td></tr>
+            <tr><td>Sub Ring Mod</td><td>Increases ring mod depth</td></tr>
+            <tr><td>Final Stage</td><td>Adds tanh(finalNorm + 0.035 × feral × feedback)</td></tr>
+            <tr><td>Feral Feedback Loop</td><td>Feedback coefficient grows from 0.02 to 0.42</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Feedback Loop Internals</h3>
+      <p>
+        The feedback loop is a <strong>tanh-saturated, one-pole smoothed</strong> version
+        of the final signal, injected back into the FM index. The feedback coefficient
+        increases from 0.02 (at FERAL 0%) to 0.42 (at FERAL 100%). This creates a slow
+        buildup of chaotic modulation that can be very aggressive at high FERAL settings.
+      </p>
+
+      <div class="callout danger">
+        <strong>Warning — FERAL at 100% can be dangerous</strong>
+        At FERAL 100% combined with high FM Index and PSY, the feedback loop can become
+        unstable. If you hear runaway oscillation, lower FERAL or FM Index. This is
+        intentional — psyOperator is a performance instrument, not a clinical filter.
+      </div>
+
+      <div class="callout tip">
+        <strong>Pro Tip — Controlled FERAL</strong>
+        For psytrance, FERAL 20–40% adds grit without instability. For darkpsy, 60–80%
+        creates metallic textures. For hitech, 80–100% creates chaos. Use the FM Index
+        knob to control how much of the FERAL chaos reaches the audio.
+      </div>
+    </section>
+
+    <!-- ============ 12 SUB OSCILLATOR ============ -->
+    <section class="content-section" id="sub">
+      <div class="section-header">
+        <span class="section-number">12</span>
+        <h2 class="section-title">Sub Oscillator</h2>
+      </div>
+      <p>
+        psyOperator includes a dedicated sub-oscillator that runs independently of the FM
+        engine. It can be layered on top of the main signal, used as a modulator, or used
+        as a carrier for carrier-sub ring mod.
+      </p>
+
+      <h3 class="subsection-title">6 Waveforms</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Wave</th><th>Character</th><th>Best for</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>SIN</td><td>Pure sine sub</td><td>Clean psy bass</td></tr>
+            <tr><td>TRI</td><td>Triangle sub (odd harmonics)</td><td>Rounded bass, softer</td></tr>
+            <tr><td>SAW</td><td>Saw sub (all harmonics)</td><td>Aggressive bass, darkpsy</td></tr>
+            <tr><td>SQR</td><td>Square sub</td><td>Acidic bass, hitech</td></tr>
+            <tr><td>FLD</td><td>tanh-folded sine (folded sub)</td><td>Metal-like sub, aggressive</td></tr>
+            <tr><td>SYN</td><td>Sync 2:1 sub</td><td>Wide, chorus-like sub</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">8 Frequency Modes</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Mode</th><th>Frequency</th><th>Character</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>÷2 (Sub-Octave)</td><td>Sine / 2</td><td>Classic sub bass</td></tr>
+            <tr><td>÷3</td><td>Sine / 3</td><td>Perfect fifth below</td></tr>
+            <tr><td>÷4</td><td>Sine / 4</td><td>Two octaves below</td></tr>
+            <tr><td>÷5</td><td>Sine / 5</td><td>Major third below</td></tr>
+            <tr><td>÷7</td><td>Sine / 7</td><td>Minor seventh below</td></tr>
+            <tr><td>UNI (Unison)</td><td>Sine (unison)</td><td>Thickens the fundamental</td></tr>
+            <tr><td>FIX (Drone)</td><td>5 to 80 Hz (fixed)</td><td>Drone sub (independent of pitch)</td></tr>
+            <tr><td>MOD (Ratio)</td><td>Modulator / 2</td><td>Sub follows FM modulator</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">4 Routing Modes</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Route</th><th>Behavior</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>LAYER</td><td>Sub is mixed with the main signal at the final stage</td></tr>
+            <tr><td>MOD</td><td>Sub becomes an additional FM modulator (into FM index)</td></tr>
+            <tr><td>CARRIER</td><td>Sub is frequency-modulated by the modulator (sub becomes carrier)</td></tr>
+            <tr><td>OFF</td><td>Sub is disabled — no audio, no modulation</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Sub Pitch &amp; Phase</h3>
+      <ul>
+        <li><code>SUB PITCH</code> — sets the sub oscillator's pitch offset from the sine oscillator (-2 to +2 octaves). Applies to all modes except FIXED (where it scales the drone frequency instead).</li>
+        <li><code>SUB PHASE</code> — phase offset from 0 to 360°. Useful for aligning the sub with the main oscillator or creating phase-cancellation effects.</li>
+        <li><code>SUB RING</code> — ring modulation depth between the sub and the sine output. At 100%, the sub becomes a pure ring-mod bell.</li>
+        <li><code>SUB DRIFT</code> — adds turbulence-driven frequency drift to the sub. Creates a "space atmosphere" that evolves over time.</li>
+      </ul>
+
+      <div class="callout tip">
+        <strong>Pro Tip — Sub for Psytrance</strong>
+        Set SUB WAVE=TRI, SUB FREQ=÷2, SUB PITCH=-1 oct, SUB LEVEL=60%. Route to LAYER.
+        This gives you a warm, thick sub-bass that sits under the FM lead without muddying it.
+      </div>
+    </section>
+
+    <!-- ============ 13 FULL PARAMETER REFERENCE ============ -->
+    <section class="content-section" id="parameters">
+      <div class="section-header">
+        <span class="section-number">13</span>
+        <h2 class="section-title">Full Parameter Reference</h2>
+      </div>
+
+      <h3 class="subsection-title">Pitch</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead><tr><th>Parameter</th><th>Range</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>PITCH SINE</td><td class="range">-4..+4 oct</td><td>Sine oscillator pitch</td></tr>
+            <tr><td>PITCH SAW</td><td class="range">-4..+4 oct</td><td>Saw oscillator pitch</td></tr>
+            <tr><td>PITCH TRI</td><td class="range">-4..+4 oct</td><td>Triangle oscillator pitch</td></tr>
+            <tr><td>PITCH SQR</td><td class="range">-4..+4 oct</td><td>Square oscillator pitch</td></tr>
+            <tr><td>PITCH MODE</td><td class="range">FREQ / OCT</td><td>Free (Hz) or quantized (octave) response</td></tr>
+            <tr><td>PITCH INPUT ALL</td><td class="range">CV input</td><td>Pitch CV for all four oscillators</td></tr>
+            <tr><td>PITCH INPUT ×4</td><td class="range">CV input</td><td>Individual pitch CV per oscillator</td></tr>
+            <tr><td>PITCH BUS MODE</td><td class="range">Off/Bipolar/Quantize/Glide/Both</td><td>How the shared Pitch Bus CV is processed</td></tr>
+            <tr><td>PITCH BUS DEPTH ×4</td><td class="range">-100..+100 %</td><td>Bus depth per oscillator</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">FM Section</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead><tr><th>Parameter</th><th>Range</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>FM INDEX</td><td class="range">-1.2..+3.23</td><td>Master FM index</td></tr>
+            <tr><td>FM AMOUNT</td><td class="range">-0.5..+0.6</td><td>Attenuverter for FM Index CV</td></tr>
+            <tr><td>FM MODE</td><td class="range">EXP / LIN / PHS</td><td>Exponential, Linear, or Phase modulation</td></tr>
+            <tr><td>FM ROUTING</td><td class="range">GLB / SLF / CHN</td><td>Global, Self, or Chain routing</td></tr>
+            <tr><td>FM SYNC</td><td class="range">Off / Soft / Hard / Rev</td><td>Sync mode</td></tr>
+            <tr><td>FM SYNC AMT</td><td class="range">0..100 %</td><td>Sync strength</td></tr>
+            <tr><td>FM CHAIN PATTERN</td><td class="range">A..H</td><td>8 chain topologies</td></tr>
+            <tr><td>FM ENV</td><td class="range">0..100 %</td><td>Envelope follower adds to FM index</td></tr>
+            <tr><td>INT SCALE</td><td class="range">0..100 %</td><td>Internal modulator depth</td></tr>
+            <tr><td>INT AMT</td><td class="range">0..100 %</td><td>Internal self-FM injection amount</td></tr>
+            <tr><td>MOD RATIO</td><td class="range">0.25..8.0</td><td>Internal modulator ratio</td></tr>
+            <tr><td>MOD WAVE</td><td class="range">SIN / TRI / SAW / SQR</td><td>Internal modulator base waveform</td></tr>
+            <tr><td>MOD PITCH</td><td class="range">±2/4/6 oct</td><td>Modulator pitch offset</td></tr>
+            <tr><td>MOD CV</td><td class="range">-100..+100 %</td><td>Modulator pitch via pitch-bus CV</td></tr>
+            <tr><td>MOD WARMTH</td><td class="range">0..100 %</td><td>tanh blend for non-sine modulators</td></tr>
+            <tr><td>LEGACY ST</td><td class="range">Off / On</td><td>Legacy +5V static or internal modulator</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Wave Shaping &amp; Character</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead><tr><th>Parameter</th><th>Range</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>FM SRC MORPH</td><td class="range">0..100 %</td><td>Selects shape among 14</td></tr>
+            <tr><td>MORPH CV AMT</td><td class="range">-100..+100 %</td><td>Bipolar depth of the Morph CV input</td></tr>
+            <tr><td>SAW SHAPE</td><td class="range">-0.5..1.0</td><td>Saw wave shaping amount</td></tr>
+            <tr><td>TRI SHAPE</td><td class="range">-0.5..1.0</td><td>Triangle wave shaping amount</td></tr>
+            <tr><td>SQR SHAPE</td><td class="range">-0.5..1.0</td><td>Square wave shaping amount</td></tr>
+            <tr><td>SHAPE CV AMT ×3</td><td class="range">-0.5..1.0</td><td>CV depth per oscillator</td></tr>
+            <tr><td>SHAPE CV</td><td class="range">-0.5..1.0</td><td>Master shape CV amount</td></tr>
+            <tr><td>PHASE MOD ×4</td><td class="range">-2..+2</td><td>Phase mod depth per oscillator</td></tr>
+            <tr><td>PHASE DIST</td><td class="range">0..100 %</td><td>Phase distortion amount</td></tr>
+            <tr><td>HARMONIC</td><td class="range">0..100 %</td><td>Harmonic sum (Chebyshev stack)</td></tr>
+            <tr><td>FOLD MIX</td><td class="range">0..80 %</td><td>Hard fold blend</td></tr>
+            <tr><td>BIT DEPTH</td><td class="range">1..16 bit</td><td>Bit crush resolution</td></tr>
+            <tr><td>SRR</td><td class="range">1..64×</td><td>Sample rate reduction</td></tr>
+            <tr><td>OUT DRIVE</td><td class="range">0..100 %</td><td>Output saturation amount</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">4 Macros</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead><tr><th>Macro</th><th>Range</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td>PSY</td><td class="range">0..100 %</td><td>Adds Squelch to morph, boosts FM index, opens wave shaping, drives FERAL</td></tr>
+            <tr><td>DARK</td><td class="range">0..100 %</td><td>Closes the DARK filter, blends in sub, boosts FERAL</td></tr>
+            <tr><td>MOTION</td><td class="range">0..100 %</td><td>Turbulence amount (Chaos / Envelope / Rhythm)</td></tr>
+            <tr><td>FERAL</td><td class="range">0..100 %</td><td>Feedback loop amount, FM self-injection, aggressive shaping</td></tr>
+            <tr><td>MASTER</td><td class="range">0..100 %</td><td>Crossfades all four macros toward maximum</td></tr>
+            <tr><td>TURB MODE</td><td class="range">CHA / ENV / RTH</td><td>Chaos, Envelope-follower, or Rhythmic gating</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subsection-title">Sub Oscillator</h3>
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead><tr><th>Parameter</th><th>Range</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td>SUB WAVE</td><td class="range">SIN/TRI/SAW/SQR/FOLD/SYNC</td><td>Sub waveform</td></tr>
+            <tr><td>SUB FREQ</td><td class="range">÷2,÷3,÷4,÷5,÷7,UNI,FIX,MOD</td><td>Frequency division or drone</td></tr>
+            <tr><td>SUB PITCH</td><td class="range">-2..+2 oct</td><td>Sub pitch offset</td></tr>
+            <tr><td>SUB PHASE</td><td class="range">0..360°</td><td>Sub phase offset</td></tr>
+            <tr><td>SUB ROUTE</td><td class="range">LAYER/MOD/CARRIER/OFF</td><td>How the sub joins the FM signal</td></tr>
+            <tr><td>SUB RING</td><td class="range">0..100 %</td><td>Sub × Sine ring mod</td></tr>
+            <tr><td>SUB DRIFT</td><td class="range">0..100 %</td><td>Spacey turbulence drift</td></tr>
+            <tr><td>SUB LEVEL</td><td class="range">0..100 %</td><td>Sub output level</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 14 LED REFERENCE ============ -->
+    <section class="content-section" id="leds">
+      <div class="section-header">
+        <span class="section-number">14</span>
+        <h2 class="section-title">LED Reference</h2>
+      </div>
+
+      <p>
+        psyOperator has 11 LEDs across the panel. Each conveys a specific piece of information:
+      </p>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>LED</th><th>Color</th><th>Meaning</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>FINAL_OUTPUT_LIGHT</td>
+              <td><span class="led-dot red"></span> Red</td>
+              <td>Output peak — brightens with the final voltage</td>
+            </tr>
+            <tr>
+              <td>LED_LIGHT (top center)</td>
+              <td><span class="led-dot green"></span> Green</td>
+              <td>FM mode — 35% (EXP), 65% (LIN), 100% (PHASE)</td>
+            </tr>
+            <tr>
+              <td>LED_RED_LIGHT (top center)</td>
+              <td><span class="led-dot blue"></span> Blue</td>
+              <td>FM routing — 35% (GLB), 65% (SLF), 100% (CHN)</td>
+            </tr>
+            <tr>
+              <td>HEXAGRAM_LIGHT</td>
+              <td><span class="led-dot cyan"></span> Cyan</td>
+              <td>Pitch bus activity + turbulence</td>
+            </tr>
+            <tr>
+              <td>FM_AMOUNT_LIGHT</td>
+              <td><span class="led-dot orange"></span> Orange</td>
+              <td>FM CV activity × FM amount</td>
+            </tr>
+            <tr>
+              <td>PITCH_STEP_MODE_LIGHT</td>
+              <td><span class="led-dot yellow"></span> Yellow</td>
+              <td>On = pitch mode is OCT (quantized)</td>
+            </tr>
+            <tr>
+              <td>CV_MODE_LIGHT_0</td>
+              <td><span class="led-dot green"></span> Green</td>
+              <td>On = CV mode is BIPOLAR</td>
+            </tr>
+            <tr>
+              <td>CV_MODE_LIGHT_1</td>
+              <td><span class="led-dot yellow"></span> Yellow</td>
+              <td>On = CV mode is UNIPOLAR</td>
+            </tr>
+            <tr>
+              <td>CV_MODE_LIGHT_2</td>
+              <td><span class="led-dot red"></span> Red</td>
+              <td>On = CV mode is REVERSE</td>
+            </tr>
+            <tr>
+              <td>FM_SRC_MORPH_CV_LIGHT</td>
+              <td><span class="led-dot green"></span> Green</td>
+              <td>Morph CV is actively moving the morph position</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 15 GENRE MODE ============ -->
+    <section class="content-section" id="genre">
+      <div class="section-header">
+        <span class="section-number">15</span>
+        <h2 class="section-title">Genre Mode</h2>
+      </div>
+      <p>
+        Right-click anywhere on the module to open the context menu, then choose
+        <strong>Genre Mode</strong>. Each preset configures the morph shape, FM mode,
+        and macro mix for instant results.
+      </p>
+
+      <!-- SCREENSHOT: Genre Mode menu -->
+      <div class="screenshot-container">
+        <div class="img-placeholder" style="min-height: 200px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+          <span>SCREENSHOT: Genre Mode Context Menu</span>
+          <span style="font-size: 0.75rem;">assets/screenshot-genre.png</span>
+        </div>
+        <div class="screenshot-caption">Fig 7. Genre Mode submenu with four options.</div>
+      </div>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead>
+            <tr><th>Mode</th><th>Morph Shape</th><th>FM Mode</th><th>PSY</th><th>FERAL</th><th>FM Index</th></tr>
+          </thead>
+          <tbody>
+            <tr><td style="color:var(--cyan);">Psytrance</td><td>Squelch</td><td>EXP</td><td>50%</td><td>20%</td><td>0.40</td></tr>
+            <tr><td style="color:var(--pink);">Darkpsy</td><td>Ring-Sine</td><td>PHASE</td><td>30%</td><td>60%</td><td>0.60</td></tr>
+            <tr><td style="color:var(--orange);">HiTech</td><td>PM-Fold</td><td>EXP</td><td>70%</td><td>90%</td><td>0.70</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout warn">
+        <strong>Warning</strong>
+        Genre Mode overrides your current settings. Save your patch first if you want
+        to return to a custom configuration.
+      </div>
+    </section>
+
+    <!-- ============ 16 CV MODES ============ -->
+    <section class="content-section" id="cv-modes">
+      <div class="section-header">
+        <span class="section-number">16</span>
+        <h2 class="section-title">CV Modes</h2>
+      </div>
+      <p>
+        The <code>CV MODE</code> switch (3-position toggle) controls how incoming CV is
+        interpreted. It applies to:
+      </p>
+      <ul>
+        <li>Pitch Bus CV</li>
+        <li>Shape CV</li>
+        <li><strong>FM Source Morph CV</strong></li>
+      </ul>
+
+      <div class="param-table-wrap">
+        <table class="param-table">
+          <thead><tr><th>Mode</th><th>LED</th><th>Range</th><th>Mapping</th></tr></thead>
+          <tbody>
+            <tr><td>Bipolar</td><td style="color:var(--green);">Green</td><td>-10V..+10V</td><td>Linear, center = 0</td></tr>
+            <tr><td>Unipolar</td><td style="color:var(--yellow);">Yellow</td><td>0V..+10V</td><td>5V = center; 0V → -1, 10V → +1</td></tr>
+            <tr><td>Reverse</td><td style="color:var(--red);">Red</td><td>-10V..+10V</td><td>Inverted: -10V → +1, +10V → -1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ 17 TIPS ============ -->
+    <section class="content-section" id="tips">
+      <div class="section-header">
+        <span class="section-number">17</span>
+        <h2 class="section-title">Tips &amp; Recipes</h2>
+      </div>
+
+      <h3 class="subsection-title">Classic Psytrance Lead</h3>
+      <ul>
+        <li>Morph ≈ 38% (Squelch)</li>
+        <li>FM Mode: EXP, FM Index: 0.4</li>
+        <li>PSY macro at 50%</li>
+        <li>Short envelope to GATE_INPUT</li>
+        <li>Route to FINAL_OUTPUT + a bit of reverb</li>
+      </ul>
+
+      <h3 class="subsection-title">Darkpsy Rolling Bass</h3>
+      <ul>
+        <li>Morph ≈ 46% (Ring-Sine)</li>
+        <li>FM Mode: PHASE, FM Index: 0.6</li>
+        <li>DARK macro at 60%</li>
+        <li>Sub route: LAYERED, sub wave: TRI, ÷2</li>
+        <li>High-pass at 60 Hz, sidechain to kick</li>
+      </ul>
+
+      <h3 class="subsection-title">HiTech Aggressive Lead</h3>
+      <ul>
+        <li>Morph ≈ 85% (PM-Fold)</li>
+        <li>FM Mode: EXP, FM Index: 0.7</li>
+        <li>PSY 70%, FERAL 90%</li>
+        <li>Turbulence: Chaotic, MOTION 30%</li>
+        <li>Bit depth 8, SRR 4× for digital edge</li>
+      </ul>
+
+      <h3 class="subsection-title">Evolving Texture</h3>
+      <ul>
+        <li>Patch S&amp;H to <code>FM SRC MORPH CV</code> at 100%</li>
+        <li>Set FM MODE to EXP, FM INDEX to 0.5</li>
+        <li>Slow LFO to <code>GATE_INPUT</code></li>
+        <li>Fully open the DARK macro</li>
+      </ul>
+
+      <div class="callout tip">
+        <strong>Pro Tip — Chain Sculpting</strong>
+        Set Pattern A, then drop the Saw node's depth to 0% inside the FM Engine Display.
+        Now the chain becomes Square → Sine → (break) — the Saw acts as a modulator but
+        is not modulated itself. This creates asymmetric FM textures.
+      </div>
+    </section>
+
+    <!-- ============ 18 TROUBLESHOOTING ============ -->
+    <section class="content-section" id="troubleshooting">
+      <div class="section-header">
+        <span class="section-number">18</span>
+        <h2 class="section-title">Troubleshooting</h2>
+      </div>
+
+      <h3 class="subsection-title">No sound from FINAL OUTPUT</h3>
+      <ul>
+        <li>Check that <code>GATE_INPUT</code> is either disconnected or receiving a high signal.</li>
+        <li>Verify that FINAL_OUTPUT is patched to your audio interface (not just SINE_OUT).</li>
+        <li>Ensure the 4 VOLUME knobs are not at zero.</li>
+        <li>Check that <code>SUB ROUTE</code> is not set to "OFF" if you rely on sub.</li>
+      </ul>
+
+      <h3 class="subsection-title">Morph CV doesn't respond</h3>
+      <ul>
+        <li>Check <code>CV MODE</code> matches your CV source range.</li>
+        <li>Increase <code>MORPH CV AMT</code> (bipolar knob, right of the CV jack).</li>
+        <li>The green LED above the jack should brighten as CV moves the morph.</li>
+      </ul>
+
+      <h3 class="subsection-title">FM Engine Display doesn't respond to clicks</h3>
+      <ul>
+        <li>Hover over the outer ring (not the center) to select a segment.</li>
+        <li>Only the focused segment responds to clicks.</li>
+        <li>Click on the segment ring itself, not the center.</li>
+      </ul>
+
+      <h3 class="subsection-title">Chain drag not working</h3>
+      <ul>
+        <li>You must focus the CHAIN segment first (hover over the ring).</li>
+        <li>Drag on a node (not the arrows).</li>
+        <li>Vertical drag is scaled 50 pixels = 100%.</li>
+      </ul>
+
+      <h3 class="subsection-title">Clipping on FINAL OUTPUT</h3>
+      <ul>
+        <li>Lower <code>OUT DRIVE</code>.</li>
+        <li>Reduce one or more macro knobs (PSY/DARK/MOTION/FERAL).</li>
+        <li>Lower the 4 VOLUME knobs.</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============ Footer ============ -->
+<footer>
+  <p>psyOperator — User Manual · Hutara v2.6.1+</p>
+  <p>Made for VCV Rack 2.x · GPL-3.0-only</p>
+  <div class="footer-links">
+    <a href="https://github.com/hutara/Hutara-modules" target="_blank" rel="noopener">Source Code</a>
+    <a href="https://github.com/hutara/Hutara-modules/issues" target="_blank" rel="noopener">Report a Bug</a>
+    <a href="https://github.com/hutara/Hutara-modules/blob/main/DONATE.md" target="_blank" rel="noopener">Donate</a>
+    <a href="https://hutara.github.io/Hutara-modules-doc/" target="_blank" rel="noopener">Docs Home</a>
+  </div>
+</footer>
+
+</body>
+</html>
