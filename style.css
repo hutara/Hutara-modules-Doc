@@ -150,7 +150,6 @@
     align-items: start;
   }
 
-  /* dسکتاپ: عناصر کنترل موبایل مخفی */
   .toc-toggle  { display: none; }
   .toc-backdrop { display: none; }
 
@@ -259,225 +258,31 @@
     color: var(--pink);
     border-left-color: var(--pink);
   }
-
-  /* ============================================================
-     MOBILE — Hamburger drawer
-     ============================================================ */
-@media (max-width: 900px) {
-
-  /* ============================================================
-     Floating Action Button (FAB) — گوشه بالا-چپ
-     ============================================================ */
-  .toc-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    /* موقعیت شناور — گوشه بالا-چپ */
-    position: fixed;
-    top: calc(70px + 12px);        /* زیر هدر sticky + فاصله */
-    left: 12px;
-    z-index: 95;
-
-    /* ابعاد دکمه — کوچک و مربعی */
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    margin: 0;
-
-    /* ظاهر */
-    background: rgba(12, 17, 24, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--border-hi);
-    border-radius: 50%;
-    color: var(--cyan);
-    box-shadow:
-      0 4px 16px rgba(0, 0, 0, 0.55),
-      0 0 0 1px rgba(60, 255, 255, 0.08),
-      inset 0 0 12px rgba(60, 255, 255, 0.04);
-
-    cursor: pointer;
-    transition:
-      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-      background 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .toc-toggle:hover {
-    background: rgba(60, 255, 255, 0.10);
-    border-color: var(--cyan);
-    box-shadow:
-      0 6px 24px rgba(0, 0, 0, 0.6),
-      0 0 16px rgba(60, 255, 255, 0.35),
-      inset 0 0 16px rgba(60, 255, 255, 0.08);
-    transform: translateY(-1px);
-  }
-
-  .toc-toggle:active {
-    transform: scale(0.94);
-  }
-
-  .toc-toggle:focus-visible {
-    outline: 2px solid var(--cyan);
-    outline-offset: 3px;
-  }
-
-  /* آیکون داخل دکمه */
-  .toc-toggle-icon {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    width: 20px;
-    height: 14px;
-    flex-shrink: 0;
-  }
-
-  .toc-toggle-icon span {
-    display: block;
-    width: 100%;
-    height: 2px;
-    background: currentColor;
-    border-radius: 2px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-origin: center;
-  }
-
-  /* تبدیل به X وقتی باز است */
-  .toc-toggle[aria-expanded="true"] .toc-toggle-icon span:nth-child(1) {
-    transform: translateY(6px) rotate(45deg);
-  }
-  .toc-toggle[aria-expanded="true"] .toc-toggle-icon span:nth-child(2) {
-    opacity: 0;
-    transform: scaleX(0);
-  }
-  .toc-toggle[aria-expanded="true"] .toc-toggle-icon span:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg);
-  }
-
-  /* وقتی drawer باز است، دکمه کوچک‌تر و کم‌رنگ‌تر شود (اختیاری) */
-  .toc-toggle[aria-expanded="true"] {
-    background: rgba(60, 255, 255, 0.12);
-    border-color: var(--cyan);
-  }
-
-  /* بقیه استایل‌ها (backdrop, aside.toc) بدون تغییر باقی می‌مانند */
-  .toc-backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-    z-index: 150;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-  }
-  .toc-backdrop.is-active {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  aside.toc {
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    width: min(85vw, 340px);
-    max-height: 100vh;
-    height: 100vh;
-    margin: 0;
-    border-radius: 0;
-    border: none;
-    border-right: 1px solid var(--border-hi);
-    z-index: 200;
-    padding: 1.25rem 1rem 2rem;
-    transform: translateX(-100%);
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  aside.toc.is-open {
-    transform: translateX(0);
-  }
-  .toc-close { display: flex; }
-
-  aside.toc li a {
-    padding: 0.75rem 0.85rem;
-    font-size: 0.95rem;
-    border-radius: 8px;
-  }
-  aside.toc li.sub a {
-    padding-left: 2rem;
-    font-size: 0.88rem;
-  }
+.feature-card .fc-icon {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 1rem;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 8px rgba(60, 255, 255, 0.45));
+  transition: filter var(--transition), color var(--transition), transform var(--transition);
 }
-@media (max-width: 900px) {
 
-  /* ============================================================
-     Sticky header inside drawer — دکمه بستن همیشه دیده شود
-     ============================================================ */
-  aside.toc .toc-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    margin: 0 -1rem 1rem -1rem;        /* کشیدن تا لبه‌های drawer */
-    padding: 1rem 1rem 0.75rem 1rem;   /* فضای داخلی بعد از کشش */
-    background: rgba(12, 17, 24, 0.96);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-bottom: 1px solid var(--border);
-    /* سایه نرم زیر هدر برای جدا شدن از آیتم‌ها */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-  }
-
-  /* دکمه × — چسبیده به گوشه راست هدر */
-  aside.toc .toc-close {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    flex-shrink: 0;
-    background: rgba(60, 255, 255, 0.06);
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    color: var(--fg-0);
-    font-size: 1.5rem;
-    line-height: 1;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  aside.toc .toc-close:hover,
-  aside.toc .toc-close:focus-visible {
-    color: var(--pink);
-    border-color: var(--pink);
-    background: rgba(255, 100, 200, 0.12);
-    box-shadow: 0 0 12px rgba(255, 100, 200, 0.35);
-    outline: none;
-  }
-
-  aside.toc .toc-close:active {
-    transform: scale(0.92);
-  }
+.feature-card .fc-icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
 }
-@media (max-width: 480px) {
-  .toc-toggle {
-    top: calc(62px + 10px);
-    left: 10px;
-    width: 40px;
-    height: 40px;
-  }
-  .toc-toggle-icon {
-    width: 18px;
-    height: 12px;
-  }
-  aside.toc { width: 90vw; }
-  aside.toc li a { padding: 0.7rem 0.75rem; font-size: 0.9rem; }
+
+.feature-card:hover .fc-icon {
+  color: var(--pink);
+  filter: drop-shadow(0 0 12px rgba(255, 100, 200, 0.6));
+  transform: scale(1.05);
 }
+
 
   /* ============================================================
      CONTENT STYLES
@@ -531,13 +336,16 @@
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), var(--glow-cyan);
   }
   .feature-card:hover::before { transform: scaleY(1); }
-  .feature-card .fc-icon { font-size: 1.8rem; margin-bottom: 0.75rem; filter: drop-shadow(0 0 8px rgba(60, 255, 255, 0.5)); }
+
   .feature-card h4 {
     font-family: var(--mono); font-size: 1rem; color: var(--cyan);
     margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;
   }
   .feature-card p { font-size: 0.9rem; color: var(--fg-1); margin: 0; }
 
+  .toc-nav-section {
+    display: none;
+  }
   /* Tables */
   .param-table-wrap {
     overflow-x: auto; border-radius: var(--radius);
@@ -764,3 +572,275 @@
   .led-dot.yellow { background: var(--yellow); color: var(--yellow); }
   .led-dot.red { background: var(--red); color: var(--red); }
   .led-dot.blue { background: #3c8cff; color: #3c8cff; }
+
+    /* ============================================================
+    Donate Section
+    ============================================================ */
+  .donate-section {
+    margin-top: 4rem;
+    margin-bottom: 2rem;
+    padding: 3rem 1rem;
+    background: radial-gradient(circle at center, rgba(255, 100, 200, 0.05) 0%, transparent 70%);
+    border-radius: var(--radius);
+  }
+
+  .iframe-container {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .iframe-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 60px rgba(255, 100, 200, 0.25) !important;
+  }
+  /* ============================================================
+     MOBILE — Hamburger drawer
+     ============================================================ */
+
+@media (max-width: 900px) {
+
+
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 62px 1rem 4rem;  
+  }
+
+
+  .toc-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: calc(70px + 12px);
+    left: 12px;
+    z-index: 95;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin: 0;
+    background: rgba(12, 17, 24, 0.92);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border-hi);
+    border-radius: 50%;
+    color: var(--cyan);
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(60, 255, 255, 0.08),
+      inset 0 0 12px rgba(60, 255, 255, 0.04);
+    cursor: pointer;
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      background 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .toc-toggle:hover {
+    background: rgba(60, 255, 255, 0.10);
+    border-color: var(--cyan);
+    box-shadow:
+      0 6px 24px rgba(0, 0, 0, 0.6),
+      0 0 16px rgba(60, 255, 255, 0.35),
+      inset 0 0 16px rgba(60, 255, 255, 0.08);
+    transform: translateY(-1px);
+  }
+  .toc-toggle:active { transform: scale(0.94); }
+  .toc-toggle:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+
+  .toc-toggle-icon {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 20px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  .toc-toggle-icon span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+  .toc-toggle[aria-expanded="true"] .toc-toggle-icon span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+  .toc-toggle[aria-expanded="true"] .toc-toggle-icon span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .toc-toggle[aria-expanded="true"] .toc-toggle-icon span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+  .toc-toggle[aria-expanded="true"] {
+    background: rgba(60, 255, 255, 0.12);
+    border-color: var(--cyan);
+  }
+
+  /* 3. Backdrop */
+  .toc-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 150;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .toc-backdrop.is-active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+
+  aside.toc {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: min(85vw, 340px);
+    max-height: 100vh;
+    height: 100vh;
+    margin: 0;
+    border-radius: 0;
+    border: none;
+    border-right: 1px solid var(--border-hi);
+    z-index: 200;
+    padding: 1.25rem 1rem 2rem;
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  aside.toc.is-open { transform: translateX(0); }
+  .toc-close { display: flex; }
+
+  aside.toc li a { padding: 0.75rem 0.85rem; font-size: 0.95rem; border-radius: 8px; }
+  aside.toc li.sub a { padding-left: 2rem; font-size: 0.88rem; }
+
+
+  aside.toc .toc-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin: 0 -1rem 1rem -1rem;
+    padding: 1rem 1rem 0.75rem 1rem;
+    background: rgba(12, 17, 24, 0.96);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  }
+
+  aside.toc .toc-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    background: rgba(60, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    color: var(--fg-0);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  aside.toc .toc-close:hover,
+  aside.toc .toc-close:focus-visible {
+    color: var(--pink);
+    border-color: var(--pink);
+    background: rgba(255, 100, 200, 0.12);
+    box-shadow: 0 0 12px rgba(255, 100, 200, 0.35);
+    outline: none;
+  }
+  aside.toc .toc-close:active { transform: scale(0.92); }
+
+
+  main { min-width: 0; overflow-x: hidden; }
+
+
+  .param-table-wrap { max-width: 100%; }
+
+
+  nav.topnav { display: none; }
+  .toc-nav-section {
+    display: block;
+    margin: 0 0 0.9rem 0;
+    padding: 0 0 0.9rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .toc-nav-title {
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    color: var(--fg-2);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin: 0 0 0.45rem 0;
+    padding: 0;
+    opacity: 0.7;
+  }
+
+  .toc-nav-list {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+  }
+.toc-nav-list::-webkit-scrollbar {
+  display: none;                 /* مخفی کردن scrollbar در Chrome/Safari */
+}
+.toc-nav-list li a {
+  flex-shrink: 0;                /* جلوگیری از فشرده شدن دکمه‌ها */
+  padding: 0.28rem 0.5rem;
+  font-size: 0.64rem;
+}
+
+  .toc-nav-list li a:hover,
+  .toc-nav-list li a:focus-visible,
+  .toc-nav-list li a:active {
+    background: rgba(60, 255, 255, 0.18);
+    border-color: var(--cyan);
+    color: var(--cyan);
+    box-shadow: 0 0 8px rgba(60, 255, 255, 0.3);
+    outline: none;
+  }
+}
+
+/* ============================================================
+   Small Mobile — 480px
+   ============================================================ */
+@media (max-width: 480px) {
+  .toc-toggle {
+    top: calc(62px + 10px);
+    left: 10px;
+    width: 40px;
+    height: 40px;
+  }
+  .toc-toggle-icon { width: 18px; height: 12px; }
+  aside.toc { width: 90vw; }
+  aside.toc li a { padding: 0.7rem 0.75rem; font-size: 0.9rem; }
+
+  /* layout padding برای FAB کوچک‌تر */
+  .layout { padding: 58px 0.75rem 4rem; }
+}
+
+/* ============================================================
+   600px — هدر و hero
+   ============================================================ */
+@media (max-width: 600px) {
+  header.topbar { padding: 0.75rem 1rem; }
+  section.hero { padding: 3rem 1rem 2rem; }
+  .section-header { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
+}

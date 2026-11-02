@@ -124,6 +124,7 @@
       <li class="sub"><a href="#random-draw">Draw Table</a></li>
       <li class="sub"><a href="#random-ring">Param Ring</a></li>
       <li><a href="#random-gate">Gate Engine</a></li>
+      <li class="sub"><a href="#random-gate-modes">Gate Modes (PAT/RND/HYB)</a></li>
       <li class="sub"><a href="#random-patterns">4 Patterns</a></li>
       <li class="sub"><a href="#random-variations">Phrase Variations</a></li>
       <li class="sub"><a href="#random-swing">Swing</a></li>
@@ -2066,7 +2067,59 @@
     <span class="flow-arrow">→</span>
     <div class="flow-node" style="border-color:var(--green);color:var(--green);">GATE_OUT</div>
   </div>
+  <h3 class="subsection-title" id="random-gate-modes">Gate Modes (PAT / RND / HYB)</h3>
+  <p>
+    The Gate Engine has three distinct generation modes, selected by the
+    <code>GATE_MODE_PARAM</code>. Each mode changes how the 16-step DNA table is
+    interpreted and how the gate width is computed.
+  </p>
 
+  <div class="param-table-wrap">
+    <table class="param-table">
+      <thead><tr><th>Mode</th><th>Label</th><th>Behavior</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>PAT</td>
+          <td>Pattern</td>
+          <td>Uses the 16-step DNA exactly as described in this section. The gate width is <code>dna.width · widthMul · gateLen · 3.5</code>, clamped to <code>[lowerBound, 0.98]</code>. This is the classic behavior.</td>
+        </tr>
+        <tr>
+          <td>RND</td>
+          <td>Random</td>
+          <td>Ignores the DNA entirely. A gate fires with probability <code>GATE_PROBABILITY</code>, and the width is randomized between 15% and 60% of the step. The maximum width is clamped to <code>0.60</code>.</td>
+        </tr>
+        <tr>
+          <td>HYB</td>
+          <td>Hybrid</td>
+          <td>DNA-driven with per-step random jitter. The trigger probability is modulated by <code>±0.075</code>, and the width is randomized by <code>0.7× .. 1.3×</code>. Rest steps have a 15% chance of firing a ghost gate. <strong>At 100% probability, HYB behaves exactly like PAT</strong> — no random fill on rest steps.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout info">
+    <strong>Gate Mode Reset</strong>
+    When the Gate Mode changes, the Gate Engine resets <code>gateStep</code> to 0
+    and <code>gateStepPhase</code> to 0. This ensures the new mode starts from the
+    beginning of the phrase. The mode is also saved in the patch JSON.
+  </div>
+
+  <div class="callout tip">
+    <strong>Tip — When to use which mode?</strong>
+    <ul style="margin-bottom: 0;">
+      <li><strong>PAT</strong> — predictable, genre-specific rhythm. The best default.</li>
+      <li><strong>RND</strong> — pure random gates, useful for ambient textures or glitch.</li>
+      <li><strong>HYB</strong> — organic, evolving rhythm that keeps the DNA character but adds variation.</li>
+    </ul>
+  </div>
+
+  <h3 class="subsection-title">Gate Mode Display</h3>
+  <p>
+    The current Gate Mode is shown on the display (top-right line 2) as
+    <code>PAT</code>, <code>RND</code>, or <code>HYB</code>. In PAT mode, the
+    current variation (e.g. <code>ghost</code>, <code>roll</code>) is appended to
+    the string. In RND and HYB modes, only the mode name is shown.
+  </p>
   <h3 class="subsection-title" id="random-patterns">4 Gate Patterns</h3>
   <p>
     Each pattern is a 16-step DNA table. Every step stores two values:
@@ -2170,20 +2223,33 @@
 
   <h3 class="subsection-title">Gate Width</h3>
   <p>
-    <code>GATE_LENGTH</code> (0.01..1.0) scales the DNA width. The final width
-    fraction is clamped by tempo-aware bounds to prevent clicks at fast tempos:
+    <code>GATE_LENGTH</code> (0.01..2.0) scales the DNA width. The final width
+    fraction is clamped by tempo-aware bounds to prevent clicks at fast tempos.
+    The scaling factor is <strong>3.5</strong> (in PAT/HYB modes), not 2 as in
+    earlier firmware versions.
   </p>
   <div class="callout info">
-    <strong>Width Formula</strong>
-    <code>widthFrac = dna.width · widthMul · gateLen · 2</code><br>
+    <strong>Width Formula (PAT / HYB modes)</strong>
+    <code>widthFrac = dna.width · widthMul · gateLen · 3.5</code><br>
     <code>effectiveMinWidthSec =</code> 3ms (default), 1.5ms (&lt;20ms step), 0.8ms (&lt;10ms), 0.4ms (&lt;5ms)<br>
     <code>minFracByTime = effectiveMinWidthSec / stepDur</code><br>
     <code>lowerBound = max(0.03, minFracByTime)</code><br>
-    <code>gateWidthFrac = clamp(widthFrac, lowerBound, 0.45)</code>
+    <code>gateWidthFrac = clamp(widthFrac, lowerBound, 0.98)</code>
     <br><br>
-    The absolute maximum is 45% of the step duration. At very fast tempos, the
-    lower bound dominates and gates become slightly narrower than the DNA suggests —
-    but they never click.
+    The absolute maximum is <strong>98% of the step duration</strong> in PAT and
+    HYB modes. At very fast tempos, the lower bound dominates and gates become
+    slightly narrower than the DNA suggests — but they never click.
+  </div>
+
+  <div class="callout info">
+    <strong>Width Formula (RND mode)</strong>
+    <code>widthMul = 0.15 + random() · 0.45</code><br>
+    <code>widthFrac = 0.30 · widthMul · gateLen · 3.5</code><br>
+    <code>absoluteMin = clamp(MIN_GATE_WIDTH_SEC / stepDur, 0.03, 0.30)</code><br>
+    <code>gateWidthFrac = clamp(widthFrac, absoluteMin, 0.60)</code>
+    <br><br>
+    In RND mode, the maximum width is <strong>60%</strong> of the step, and the
+    minimum is capped at 30% to keep the rhythm clear even at fast tempos.
   </div>
 
   <h3 class="subsection-title" id="random-swing">Swing</h3>
@@ -2268,32 +2334,25 @@
     <li><strong>BPM PPQN detector</strong> — runs on <code>ENVELOPE_CLOCK_INPUT</code>, used by BPM sync</li>
   </ul>
   <p>
-    Both detectors analyze the interval between clock edges. The gate detector
-    scores candidate PPQNs against the BPM that would result, favoring tempos close
-    to 120 BPM and penalizing out-of-range tempos:
+    Both detectors analyze the interval between clock edges. They use the same
+    scoring function, which favors tempos close to <strong>132.5 BPM</strong>
+    and penalizes tempos outside the musical range 55–210 BPM:
   </p>
   <div class="callout info">
-    <strong>Gate PPQN Scoring</strong>
+    <strong>Shared PPQN Scoring</strong>
     <code>quarterDur = avgInterval · candidatePpqn</code><br>
     <code>bpm = 60 / quarterDur</code><br>
-    <code>score = |bpm − 120|</code><br>
-    <code>if bpm &lt; 60:  score += (60 − bpm) · 8</code><br>
-    <code>if bpm &gt; 220: score += (bpm − 220) · 8</code>
+    <code>if bpm &lt; 55 or bpm &gt; 210:</code><br>
+    &nbsp;&nbsp;<code>score = 1e6 + (55 − bpm)</code> &nbsp; (for bpm &lt; 55)<br>
+    &nbsp;&nbsp;<code>score = 1e6 + (bpm − 210)</code> &nbsp; (for bpm &gt; 210)<br>
+    <code>else:</code><br>
+    &nbsp;&nbsp;<code>score = |bpm − 132.5|</code>
     <br><br>
-    Candidates: <code>{1, 2, 4, 6, 8, 12, 24, 48}</code>. Requires at least
-    <code>AUTO_DETECT_MIN_PULSES = 4</code> edges. Uses hysteresis
-    <code>PPQN_HYSTERESIS = 1.5</code> — a new PPQN must score 1.5× better to win.
-    The average interval is computed over the last 8 edges.
-  </div>
-  <div class="callout info">
-    <strong>BPM PPQN Scoring</strong>
-    <code>secondsPerBeat = envelopeClockTimer · candidatePpqn</code><br>
-    <code>bpm = 60 / secondsPerBeat</code><br>
-    Accept only <code>30 &lt; bpm &lt; 300</code>.<br>
-    <code>score = |bpm − 120|</code>
-    <br><br>
-    Candidates: <code>{1, 2, 4, 24}</code>. Runs on every clock edge, no hysteresis.
-    The result is stored in <code>autoDetectedPpqn</code>.
+    Candidates: <strong><code>{1, 4, 24}</code></strong>. Requires at least
+    <strong><code>AUTO_DETECT_MIN_PULSES = 16</code></strong> edges. Uses hysteresis
+    <strong><code>PPQN_HYSTERESIS = 1.5</code></strong> — a new PPQN must score
+    1.5× better to win. The average interval is computed over the last
+    <strong>16</strong> edges (not 8).
   </div>
 
   <h3 class="subsection-title">PPQN Override Parameters</h3>
@@ -2302,24 +2361,17 @@
       <thead><tr><th>Parameter</th><th>Options</th><th>Purpose</th></tr></thead>
       <tbody>
         <tr>
+          <td><code>INPUT_CLOCK_PPQN</code></td>
           <td>Auto, 1, 2, 4, 6, 8, 12, 24, 48</td>
           <td>Gate PPQN override. In Auto, uses the gate detector. Otherwise forces the value.</td>
         </tr>
         <tr>
           <td><code>CLOCK_PPQN</code></td>
-          <td>Auto, 1, 2, 4, 24 (MIDI)</td>
-          <td>BPM PPQN override. In Auto, uses the BPM detector. Otherwise forces the value.</td>
+          <td>Auto, 1, 4, 24 (MIDI)</td>
+          <td>BPM PPQN override. In Auto, uses the BPM detector. Otherwise forces the value. <strong>Note: "2 PPQN" was removed in v2.0.</strong></td>
         </tr>
       </tbody>
     </table>
-  </div>
-  <div class="callout tip">
-    <strong>Tip — Why Two Overrides?</strong>
-    The gate engine and BPM sync can run at different PPQNs. For example, you can
-    feed a 24-PPQN MIDI clock to <code>ENVELOPE_CLOCK_INPUT</code> (set
-    <code>CLOCK_PPQN</code> to 24) while feeding a 1-PPQN clock to
-    <code>ON_INPUT</code> (set <code>INPUT_CLOCK_PPQN</code> to 1). This gives you
-    precise BPM sync and predictable gate steps.
   </div>
 
   <h3 class="subsection-title">BPM Measurement</h3>
@@ -2362,14 +2414,13 @@
   <div class="callout info">
     <strong>Free-mode duration</strong>
     <code>duration = 0.005 · 360000^time</code>, where <code>time ∈ [0, 1]</code>.
-    Range: 5ms to 1.8s. The TIME_INPUT adds <code>voltage/10</code> to the knob
-    value before clamping.
-  </div>
-  <div class="callout info">
-    <strong>BPM-sync duration</strong>
-    <code>beats = divisionToBeats(divisionIndex)</code><br>
-    <code>mult = multiplierToFactor(multIdx)</code><br>
-    <code>duration = beats · mult · 60 / measuredBpm</code>
+    Range: <strong>5 ms to 1800 s (30 minutes)</strong>. The TIME_INPUT adds
+    <code>voltage/10</code> to the knob value before clamping.
+    <br><br>
+    <strong>Note:</strong> earlier documentation (v1.x) incorrectly stated the
+    maximum as 1.8 s. The actual maximum is 30 minutes because 360000<sup>1</sup> = 360000
+    and 0.005 × 360000 = 1800 s. If you need shorter maximum durations, use BPM Sync
+    with a slow division instead.
   </div>
 
   <h3 class="subsection-title">Divisions (22)</h3>
@@ -2502,7 +2553,27 @@
     <li><strong>Snap Y (default on)</strong> → quantizes to 1/32 steps</li>
     <li><strong>On release</strong> → gesture ends; the table remains</li>
   </ul>
+  <h3 class="subsection-title">Drag &amp; Snap Indicators</h3>
+  <p>
+    While drawing on the display, two indicators are visible:
+  </p>
+  <ul>
+    <li><strong>Hollow cyan circle</strong> — the exact mouse position. This tracks the cursor precisely because the module uses <code>DragHoverEvent::pos</code>, which is updated every frame.</li>
+    <li><strong>Solid dot</strong> — where the point will actually be written. The dot is green when Snap Y is off, and orange when Snap Y is on.</li>
+  </ul>
+  <p>
+    The status line in the display's top-left shows <code>SNAP ON (Ctrl=off)</code>
+    or <code>SNAP OFF</code> while drawing. Hold <kbd>Ctrl</kbd> to temporarily
+    disable Snap Y.
+  </p>
 
+  <div class="callout info">
+    <strong>Live Edit During Playback</strong>
+    The draw table is published to the audio thread via a Seqlock-protected
+    double-buffer. During a drag, the table is flushed at up to 100 Hz (every
+    10 ms), and a final flush occurs on release. This means the sound updates
+    in near real-time as you draw, without CPU spikes.
+  </div>
   <h3 class="subsection-title">UNDO / RESET Buttons</h3>
   <p>Two buttons are drawn at the bottom-right of the display:</p>
   <ul>
@@ -2552,7 +2623,7 @@
       <thead><tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr></thead>
       <tbody>
         <tr><td>ENHANCED_MODE</td><td class="range">Legacy / Enhanced</td><td>Enhanced</td><td>Enables the Enhanced envelope engine</td></tr>
-        <tr><td>TIME</td><td class="range">0 .. 1</td><td>0.5</td><td>Free: exponential time (5ms..1.8s). BPM: division index (22 options)</td></tr>
+        <tr><td>TIME</td><td class="range">0 .. 1</td><td>0.5</td><td>Free: exponential time (5 ms .. 1800 s). BPM: division index (22 options)</td></tr>
         <tr><td>SHAPE</td><td class="range">0 .. 1</td><td>0</td><td>Selects among 24 shapes with continuous morph</td></tr>
         <tr><td>WARP</td><td class="range">-1 .. +1</td><td>0</td><td>Phase warp (exponent = 2^(2.5·warp))</td></tr>
         <tr><td>FLUX</td><td class="range">0 .. 100 %</td><td>0</td><td>8-cycle ripple depth</td></tr>
@@ -2562,7 +2633,7 @@
         <tr><td>TRIG_BUTTON</td><td class="range">Button</td><td>—</td><td>Manual envelope trigger</td></tr>
         <tr><td>TIME_SYNC_MODE</td><td class="range">Free / BPM Sync</td><td>Free</td><td>Time source for the envelope duration</td></tr>
         <tr><td>BPM_MULTIPLIER</td><td class="range">1/4× .. 8×</td><td>1×</td><td>Multiplier applied to the base division</td></tr>
-        <tr><td>CLOCK_PPQN</td><td class="range">Auto / 1 / 2 / 4 / 24</td><td>Auto</td><td>BPM PPQN override</td></tr>
+        <tr><td>CLOCK_PPQN</td><td class="range">Auto / 1 / 4 / 24</td><td>Auto</td><td>BPM PPQN override (<strong>"2" removed in v2.0</strong>)</td></tr>
         <tr><td>ENVELOPE_OFFSET</td><td class="range">-5 .. +5 V</td><td>0 V</td><td>DC offset added after scaling</td></tr>
         <tr><td>ENVELOPE_RANGE</td><td class="range">0.25 .. 10 V</td><td>10 V</td><td>Peak voltage of the envelope</td></tr>
       </tbody>
@@ -2574,9 +2645,10 @@
     <table class="param-table">
       <thead><tr><th>Parameter</th><th>Range</th><th>Default</th><th>Description</th></tr></thead>
       <tbody>
-        <tr><td>RANDOM_GATE_SPEED</td><td class="range">1/1 .. 1/32 (6 options)</td><td>1/1</td><td>Step duration relative to a quarter note</td></tr>
-        <tr><td>GATE_LENGTH</td><td class="range">0.01 .. 1.0</td><td>0.5</td><td>Gate width scale</td></tr>
+        <tr><td>RANDOM_GATE_SPEED</td><td class="range">1/1 .. 1/32 (6 options)</td><td>1/2</td><td>Step duration relative to a quarter note</td></tr>
+        <tr><td>GATE_LENGTH</td><td class="range">0.01 .. 2.0</td><td>0.7</td><td>Gate width scale (multiplied by 3.5 internally)</td></tr>
         <tr><td>GATE_PATTERN</td><td class="range">Darkpsy / Psytrance / Hi-Tech / Break</td><td>Psytrance</td><td>16-step DNA pattern</td></tr>
+        <tr><td>GATE_MODE</td><td class="range">PAT / RND / HYB</td><td>PAT</td><td>Gate generation mode (see Gate Modes)</td></tr>
         <tr><td>GATE_FILL</td><td class="range">0 .. 1</td><td>0.4</td><td>Phrase variation density</td></tr>
         <tr><td>GATE_PROBABILITY</td><td class="range">0 .. 100 %</td><td>75 %</td><td>Per-step trigger probability multiplier</td></tr>
         <tr><td>INPUT_CLOCK_PPQN</td><td class="range">Auto / 1 / 2 / 4 / 6 / 8 / 12 / 24 / 48</td><td>Auto</td><td>Gate PPQN override</td></tr>
@@ -2840,7 +2912,7 @@
 
   <h3 class="subsection-title">Display shows wrong PPQN</h3>
   <ul>
-    <li>The auto-detect favors BPMs near 120. If your clock is far from that, set <code>CLOCK_PPQN</code> or <code>INPUT_CLOCK_PPQN</code> manually.</li>
+    <li>The auto-detect favors BPMs near <strong>132.5</strong>. If your clock is far from that, set <code>CLOCK_PPQN</code> or <code>INPUT_CLOCK_PPQN</code> manually.</li>
     <li>Use the context menu "Reset PPQN Detection" to clear the history and re-detect.</li>
     <li>Hysteresis (1.5×) means the detector is slow to change — this is intentional to avoid flapping.</li>
   </ul>
@@ -2891,6 +2963,7 @@
     <table class="param-table">
       <thead><tr><th>JSON key</th><th>Type</th><th>Description</th></tr></thead>
       <tbody>
+        <tr><td><code>moduleVersion</code></td><td>int</td><td>Current module version (2). Used for backward-compatible patch migration from v1.0.</td></tr>
         <tr><td><code>enhancedMode</code></td><td>bool</td><td>Whether Enhanced mode was active</td></tr>
         <tr><td><code>drawMode</code></td><td>bool</td><td>Whether Draw mode was active</td></tr>
         <tr><td><code>shapeVersion</code></td><td>int</td><td>NUM_SHAPES at save time (24). Used for forward-compatibility.</td></tr>
@@ -2898,8 +2971,12 @@
         <tr><td><code>drawResetTable</code></td><td>float[256]</td><td>The pre-draw snapshot used by RESET (only saved when drawMode is true)</td></tr>
         <tr><td><code>drawResetAvailable</code></td><td>bool</td><td>Whether RESET is available (only saved when drawMode is true)</td></tr>
         <tr><td><code>measuredBpm</code></td><td>float</td><td>Last measured BPM (used to seed the display on load)</td></tr>
+        <tr><td><code>haveBpmMeasurement</code></td><td>bool</td><td>Whether the BPM value is considered valid</td></tr>
         <tr><td><code>autoDetectedPpqn</code></td><td>int</td><td>Last BPM PPQN detection result</td></tr>
         <tr><td><code>onInputDetectedPpqn</code></td><td>int</td><td>Last gate PPQN detection result</td></tr>
+        <tr><td><code>gateBar</code></td><td>int</td><td>Current bar number (for phrase variation tracking)</td></tr>
+        <tr><td><code>gateStep</code></td><td>int</td><td>Current step within the bar (0..15)</td></tr>
+        <tr><td><code>gateVar</code></td><td>int</td><td>Current variation (0=V_ORIG, 1=V_GHOST, 2=V_FILL32, 3=V_DROP, 4=V_ROLL)</td></tr>
       </tbody>
     </table>
   </div>
@@ -2917,6 +2994,7 @@
     module reset effectively discards any drawn envelope — save your patch first
     if you want to keep it.
   </div>
+  
 </section>
 
 <!-- ============ R-14 QUICK REFERENCE CARD ============ -->
@@ -2935,12 +3013,12 @@
     <table class="param-table">
       <thead><tr><th>Quantity</th><th>Value</th></tr></thead>
       <tbody>
-        <tr><td>Free-mode time range</td><td>5 ms .. 1.8 s</td></tr>
+        <tr><td>Free-mode time range</td><td>5 ms .. 1800 s (30 min)</td></tr>
         <tr><td>BPM measurement valid range</td><td>5 .. 400 BPM</td></tr>
         <tr><td>BPM smoothing factor</td><td>0.1 (≈10 edges)</td></tr>
         <tr><td>BPM timeout</td><td>max(2 s, 4 × beat period)</td></tr>
         <tr><td>Gate step minimum</td><td>1e-5 s</td></tr>
-        <tr><td>Gate width absolute range</td><td>3 % .. 45 % of step</td></tr>
+        <tr><td>Gate width absolute range</td><td>3 % .. 98 % (PAT/HYB) / 3 % .. 60 % (RND)</td></tr>
         <tr><td>Gate width minimum (by step duration)</td><td>3 ms (&lt;20 ms step: 1.5 ms, &lt;10 ms: 0.8 ms, &lt;5 ms: 0.4 ms)</td></tr>
         <tr><td>Clock-loss timeout</td><td>max(0.5 s, 6 × last interval)</td></tr>
         <tr><td>EOC pulse width</td><td>1 ms</td></tr>
@@ -2954,13 +3032,12 @@
     <table class="param-table">
       <thead><tr><th>Quantity</th><th>Value</th></tr></thead>
       <tbody>
-        <tr><td>Gate PPQN candidates</td><td>1, 2, 4, 6, 8, 12, 24, 48</td></tr>
-        <tr><td>BPM PPQN candidates</td><td>1, 2, 4, 24</td></tr>
-        <tr><td>Auto-detect minimum pulses</td><td>4</td></tr>
+        <tr><td>Gate PPQN candidates</td><td>1, 4, 24</td></tr>
+        <tr><td>BPM PPQN candidates</td><td>1, 4, 24</td></tr>
+        <tr><td>Auto-detect minimum pulses</td><td>16</td></tr>
         <tr><td>PPQN hysteresis</td><td>1.5× (new must score 1.5× better)</td></tr>
-        <tr><td>Gate PPQN history</td><td>last 8 intervals</td></tr>
-        <tr><td>Gate PPQN scoring target</td><td>120 BPM (±penalty outside 60..220)</td></tr>
-        <tr><td>BPM PPQN scoring target</td><td>120 BPM, valid 30..300</td></tr>
+        <tr><td>PPQN history</td><td>last 16 intervals</td></tr>
+        <tr><td>PPQN scoring target</td><td>132.5 BPM, valid 55..210</td></tr>
       </tbody>
     </table>
   </div>
@@ -2989,8 +3066,8 @@
       <tbody>
         <tr><td>Steps per pattern</td><td>16</td></tr>
         <tr><td>Patterns</td><td>Darkpsy, Psytrance, Hi-Tech, Break</td></tr>
+        <tr><td>Gate Modes</td><td>PAT, RND, HYB</td></tr>
         <tr><td>Variations</td><td>V_ORIG, V_GHOST, V_FILL32, V_DROP, V_ROLL</td></tr>
-        <tr><td>Variation check interval</td><td>every 4 bars (on bar % 4 == 0)</td></tr>
         <tr><td>Swing max offset</td><td>50 % of a step (odd steps only)</td></tr>
         <tr><td>Gate speed multipliers</td><td>4.0×, 2.0×, 1.0×, 0.5×, 0.25×, 0.125×</td></tr>
         <tr><td>Gate high voltage</td><td>10 V</td></tr>
@@ -3047,18 +3124,44 @@
   </div>
 </section>
 
+<!-- ============ Donation Section ============ -->
+<section class="content-section donate-section" id="donate" style="text-align: center; display: flex; flex-direction: column; align-items: center; border-top: 1px solid var(--border); padding-top: 3rem; margin-top: 3rem;">
+  <div class="section-header" style="width: 100%; justify-content: center; border-bottom: none; margin-bottom: 1rem;">
+    <span class="section-number" style="color: var(--pink);">❤️</span>
+    <h2 class="section-title">Support the Project</h2>
+  </div>
+  <p style="max-width: 600px; margin-bottom: 2rem; color: var(--fg-1);">
+    If you find these modules useful, consider making a donation to support future development.
+    Crypto donations are accepted securely and anonymously.
+  </p>
+  
+  <!-- HiddenPay Embed iFrame -->
+  <div class="iframe-container" style="position: relative; display: inline-block; box-shadow: 0 0 40px rgba(0, 255, 255, 0.15); border-radius: 16px;">
+    <iframe 
+      src="https://hiddenswap.com/pay/iH5HYcGi/embed" 
+      title="Donate with any coin" 
+      width="340" 
+      height="440" 
+      style="border:0; border-radius:16px; max-width:100%; background: var(--bg-1);" 
+      loading="lazy">
+    </iframe>
+  </div>
+  <p style="font-size: 0.8rem; color: var(--fg-2); margin-top: 1.5rem; font-family: var(--mono);">
+    No KYC required. Powered by HiddenPay.
+  </p>
+</section>
   </main>
 </div>
 
 <!-- ============ Footer ============ -->
 <footer>
-  <p>psyOperator — User Manual · Hutara v2.6.1+</p>
+  <p>Hutara Modules — User Manual · Module v2.0.0</p>
   <p>Made for VCV Rack 2.x · GPL-3.0-only</p>
   <div class="footer-links">
     <a href="https://github.com/hutara/Hutara-modules" target="_blank" rel="noopener">Source Code</a>
     <a href="https://github.com/hutara/Hutara-modules/issues" target="_blank" rel="noopener">Report a Bug</a>
-    <a href="https://github.com/hutara/Hutara-modules/blob/main/DONATE.md" target="_blank" rel="noopener">Donate</a>
-    <a href="https://hutara.github.io/Hutara-modules-doc/" target="_blank" rel="noopener">Docs Home</a>
+    <a href="https://hiddenswap.com/pay/iH5HYcGi" target="_blank" rel="noopener">Donate</a>
+    <a href="https://hutara.github.io/Hutara-modules-Doc/" target="_blank" rel="noopener">Docs Home</a>
   </div>
 </footer>
 
